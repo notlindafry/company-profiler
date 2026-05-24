@@ -4,6 +4,10 @@ A small web app for job-search prep. Type an executive's **name** and **company*
 click **Research**, and the app searches the live web with Claude and returns a
 clean, sourced profile you can read (and print) before an interview or outreach.
 
+**Leave the Executive Name blank** and enter just a company to get a **company
+profile** instead — products, milestones (funding/IPO), controversies (breaches,
+lawsuits), 10-K/8-K highlights, regulatory filings (e.g. OCC), and major customers.
+
 Built with Next.js + TypeScript + Tailwind CSS, using the Anthropic API with the
 web search tool. The API key is read on the server only and is never exposed to
 the browser.

@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { researchExecutive } from "@/lib/research";
+import { researchExecutive, researchCompany } from "@/lib/research";
 
 // Run on the Node.js runtime (the Anthropic SDK needs it), and give the
 // function room to finish — research can take 20-60 seconds. On Vercel's Hobby
@@ -24,9 +24,9 @@ export async function POST(req: Request) {
 
   const { name, company } = (body ?? {}) as { name?: string; company?: string };
 
-  if (!name?.trim() || !company?.trim()) {
+  if (!company?.trim()) {
     return Response.json(
-      { error: "Please provide both an executive name and a company." },
+      { error: "Please provide a company." },
       { status: 400 }
     );
   }
@@ -34,8 +34,13 @@ export async function POST(req: Request) {
   const client = new Anthropic(); // reads ANTHROPIC_API_KEY from the environment
 
   try {
-    const profile = await researchExecutive(client, name.trim(), company.trim());
-    return Response.json({ profile });
+    // With a name: research the executive. Name left blank: research the company.
+    if (name?.trim()) {
+      const profile = await researchExecutive(client, name.trim(), company.trim());
+      return Response.json({ kind: "executive", profile });
+    }
+    const profile = await researchCompany(client, company.trim());
+    return Response.json({ kind: "company", profile });
   } catch (err) {
     console.error("Research failed:", err);
     const message =

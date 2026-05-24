@@ -1,7 +1,11 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { MODEL, MAX_WEB_SEARCHES } from "./config";
-import { SYSTEM_PROMPT, buildResearchPrompt } from "./prompt";
-import type { ExecutiveProfile } from "./schema";
+import {
+  SYSTEM_PROMPT,
+  buildExecutivePrompt,
+  buildCompanyPrompt,
+} from "./prompt";
+import type { ExecutiveProfile, CompanyProfile } from "./schema";
 
 // Pull the JSON object out of Claude's final answer. We instruct the model to
 // wrap it in a ```json fence; we take the LAST fenced block (the final answer),
@@ -17,13 +21,12 @@ function extractJson(text: string): string {
   return candidate.slice(start, end + 1);
 }
 
-export async function researchExecutive(
-  client: Anthropic,
-  name: string,
-  company: string
-): Promise<ExecutiveProfile> {
+// Shared research loop: send the prompt, let the web search tool run, and parse
+// the JSON profile out of the final message. Used for both executive and
+// company lookups.
+async function runResearch<T>(client: Anthropic, prompt: string): Promise<T> {
   const messages: Anthropic.MessageParam[] = [
-    { role: "user", content: buildResearchPrompt(name, company) },
+    { role: "user", content: prompt },
   ];
 
   let finalMessage: Anthropic.Message | undefined;
@@ -78,8 +81,26 @@ export async function researchExecutive(
   const json = extractJson(fullText);
 
   try {
-    return JSON.parse(json) as ExecutiveProfile;
+    return JSON.parse(json) as T;
   } catch {
     throw new Error("The model's response was not valid JSON.");
   }
+}
+
+export function researchExecutive(
+  client: Anthropic,
+  name: string,
+  company: string
+): Promise<ExecutiveProfile> {
+  return runResearch<ExecutiveProfile>(
+    client,
+    buildExecutivePrompt(name, company)
+  );
+}
+
+export function researchCompany(
+  client: Anthropic,
+  company: string
+): Promise<CompanyProfile> {
+  return runResearch<CompanyProfile>(client, buildCompanyPrompt(company));
 }
