@@ -47,7 +47,9 @@ export async function POST(req: Request) {
     );
   }
 
-  const client = new Anthropic(); // reads ANTHROPIC_API_KEY from the environment
+  // reads ANTHROPIC_API_KEY from the environment; limit retries so a slow call
+  // can't multiply its time with backoff and blow the time budget.
+  const client = new Anthropic({ maxRetries: 1 });
 
   try {
     // With a name: research the executive. Name left blank: research the company.

@@ -7,9 +7,9 @@
 export const MODEL = "claude-sonnet-4-6";
 
 // How many web searches Claude may run per research request. Higher = more
-// thorough, but slower. 8 with "medium" effort (see lib/research.ts) keeps even
-// large subjects comfortably within the time limit. Raise/lower to taste.
-export const MAX_WEB_SEARCHES = 8;
+// thorough, but slower. Kept tight so even heavily-documented subjects finish
+// well within the time limit. Raise/lower to taste.
+export const MAX_WEB_SEARCHES = 5;
 
 // Limit research to materials from roughly the last N years. Foundational/
 // historical facts (company founding & IPO date, education, career history) are

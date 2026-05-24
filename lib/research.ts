@@ -21,6 +21,10 @@ function extractJson(text: string): string {
   return candidate.slice(start, end + 1);
 }
 
+// Stop research before the serverless function's hard limit (300s) so we can
+// return a clear message instead of being killed mid-flight.
+const RESEARCH_BUDGET_MS = 240_000;
+
 // Shared research loop: send the prompt, let the web search tool run, and parse
 // the JSON profile out of the final message. Used for both executive and
 // company lookups.
@@ -29,36 +33,53 @@ async function runResearch<T>(client: Anthropic, prompt: string): Promise<T> {
     { role: "user", content: prompt },
   ];
 
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), RESEARCH_BUDGET_MS);
+
   let finalMessage: Anthropic.Message | undefined;
 
-  // The web search tool runs a server-side loop. If it hits its internal
-  // iteration cap it returns stop_reason "pause_turn"; we re-send to continue.
-  // We stream to keep the connection alive during the 20-60s of research.
-  for (let attempt = 0; attempt < 6; attempt++) {
-    const stream = client.messages.stream({
-      model: MODEL,
-      max_tokens: 16000,
-      // "medium" effort is thorough but much faster than "high", which can
-      // over-explore on big subjects and run past the time limit.
-      output_config: { effort: "medium" },
-      system: SYSTEM_PROMPT,
-      tools: [
+  try {
+    // The web search tool runs a server-side loop. If it hits its internal
+    // iteration cap it returns stop_reason "pause_turn"; we re-send to continue.
+    // Capped at a few attempts so a thorough subject can't spiral indefinitely.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const stream = client.messages.stream(
         {
-          type: "web_search_20260209",
-          name: "web_search",
-          max_uses: MAX_WEB_SEARCHES,
+          model: MODEL,
+          max_tokens: 16000,
+          // "medium" effort is thorough but much faster than "high", which can
+          // over-explore on big subjects and run past the time limit.
+          output_config: { effort: "medium" },
+          system: SYSTEM_PROMPT,
+          tools: [
+            {
+              type: "web_search_20260209",
+              name: "web_search",
+              max_uses: MAX_WEB_SEARCHES,
+            },
+          ],
+          messages,
         },
-      ],
-      messages,
-    });
+        { signal: controller.signal }
+      );
 
-    finalMessage = await stream.finalMessage();
+      finalMessage = await stream.finalMessage();
 
-    if (finalMessage.stop_reason === "pause_turn") {
-      messages.push({ role: "assistant", content: finalMessage.content });
-      continue;
+      if (finalMessage.stop_reason === "pause_turn") {
+        messages.push({ role: "assistant", content: finalMessage.content });
+        continue;
+      }
+      break;
     }
-    break;
+  } catch (err) {
+    if (controller.signal.aborted) {
+      throw new Error(
+        "Research took too long for this subject and was stopped. Try researching the person and the company separately, or remove the extra detail field."
+      );
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
   }
 
   if (!finalMessage) {
