@@ -1,0 +1,85 @@
+import Anthropic from "@anthropic-ai/sdk";
+import { MODEL, MAX_WEB_SEARCHES } from "./config";
+import { SYSTEM_PROMPT, buildResearchPrompt } from "./prompt";
+import type { ExecutiveProfile } from "./schema";
+
+// Pull the JSON object out of Claude's final answer. We instruct the model to
+// wrap it in a ```json fence; we take the LAST fenced block (the final answer),
+// and fall back to the outermost { ... } if no fence is present.
+function extractJson(text: string): string {
+  const fences = [...text.matchAll(/```(?:json)?\s*([\s\S]*?)```/gi)];
+  const candidate = fences.length ? fences[fences.length - 1][1] : text;
+  const start = candidate.indexOf("{");
+  const end = candidate.lastIndexOf("}");
+  if (start === -1 || end === -1 || end < start) {
+    throw new Error("Could not find a JSON object in the model's response.");
+  }
+  return candidate.slice(start, end + 1);
+}
+
+export async function researchExecutive(
+  client: Anthropic,
+  name: string,
+  company: string
+): Promise<ExecutiveProfile> {
+  const messages: Anthropic.MessageParam[] = [
+    { role: "user", content: buildResearchPrompt(name, company) },
+  ];
+
+  let finalMessage: Anthropic.Message | undefined;
+
+  // The web search tool runs a server-side loop. If it hits its internal
+  // iteration cap it returns stop_reason "pause_turn"; we re-send to continue.
+  // We stream to keep the connection alive during the 20-60s of research.
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const stream = client.messages.stream({
+      model: MODEL,
+      max_tokens: 16000,
+      system: SYSTEM_PROMPT,
+      tools: [
+        {
+          type: "web_search_20260209",
+          name: "web_search",
+          max_uses: MAX_WEB_SEARCHES,
+        },
+      ],
+      messages,
+    });
+
+    finalMessage = await stream.finalMessage();
+
+    if (finalMessage.stop_reason === "pause_turn") {
+      messages.push({ role: "assistant", content: finalMessage.content });
+      continue;
+    }
+    break;
+  }
+
+  if (!finalMessage) {
+    throw new Error("No response from the model.");
+  }
+
+  if (finalMessage.stop_reason === "refusal") {
+    throw new Error(
+      "The model declined to answer this request. Try a different name or company."
+    );
+  }
+
+  // Gather all text the model produced; the final JSON lives in the last fence.
+  const fullText = finalMessage.content
+    .filter((block): block is Anthropic.TextBlock => block.type === "text")
+    .map((block) => block.text)
+    .join("\n");
+
+  if (!fullText.trim()) {
+    throw new Error("The model returned no readable text.");
+  }
+
+  const json = extractJson(fullText);
+
+  try {
+    return JSON.parse(json) as ExecutiveProfile;
+  } catch {
+    throw new Error("The model's response was not valid JSON.");
+  }
+}

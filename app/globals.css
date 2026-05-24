@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+/* Print / Save-as-PDF styles: hide the page chrome and let the profile fill
+   the page cleanly. Elements marked .no-print are hidden when printing. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+  }
+
+  .print-container {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  a {
+    color: black;
+    text-decoration: none;
+  }
+
+  /* Avoid awkward page breaks inside a section. */
+  section {
+    break-inside: avoid;
+  }
+}
