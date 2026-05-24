@@ -38,6 +38,9 @@ async function runResearch<T>(client: Anthropic, prompt: string): Promise<T> {
     const stream = client.messages.stream({
       model: MODEL,
       max_tokens: 16000,
+      // "medium" effort keeps the run faster so it finishes within the hosting
+      // time limit; "high" (the default) is more thorough but slower.
+      output_config: { effort: "medium" },
       system: SYSTEM_PROMPT,
       tools: [
         {

@@ -39,11 +39,31 @@ export default function Profiler() {
         window.location.reload();
         return;
       }
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Research failed. Please try again.");
+
+      // Read the body as text first: a hosting timeout returns a non-JSON error
+      // page, and calling res.json() on that throws a confusing parse error.
+      const rawText = await res.text();
+      let parsed: unknown = null;
+      try {
+        parsed = rawText ? JSON.parse(rawText) : null;
+      } catch {
+        parsed = null;
       }
-      setResult(data as Result);
+
+      if (parsed === null) {
+        throw new Error(
+          res.status === 504 || res.status === 500
+            ? "The research ran longer than the server allows and was cut off before it finished. On the free hosting tier this can happen with deeper lookups. Try again, or research just the person or just the company on its own."
+            : "The server returned an unexpected response. Please try again in a moment."
+        );
+      }
+
+      if (!res.ok) {
+        const msg = (parsed as { error?: string }).error;
+        throw new Error(msg || "Research failed. Please try again.");
+      }
+
+      setResult(parsed as Result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {

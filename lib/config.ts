@@ -7,8 +7,9 @@
 export const MODEL = "claude-sonnet-4-6";
 
 // How many web searches Claude may run per research request. Higher = more
-// thorough but slower and more expensive.
-export const MAX_WEB_SEARCHES = 10;
+// thorough, but slower. Kept modest so research finishes within the hosting
+// time limit (the free Vercel plan cuts requests off at 60 seconds).
+export const MAX_WEB_SEARCHES = 6;
 
 // Limit research to materials from roughly the last N years. Foundational/
 // historical facts (company founding & IPO date, education, career history) are
