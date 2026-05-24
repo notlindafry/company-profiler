@@ -1,4 +1,4 @@
-# Hiring Manager Profiler
+# Tech Risk Profiler
 
 A small web app for job-search prep. Type an executive's **name** and **company**,
 click **Research**, and the app searches the live web with Claude and returns a
@@ -74,6 +74,18 @@ the browser.
 > `lib/config.ts`).
 
 ---
+
+## Privacy & access
+
+- **Search engines:** the app tells search engines not to index it (via a
+  `noindex` setting), so it should not show up in Google results.
+- **Password gate:** the app is public by default — anyone with the link can use
+  it, and their searches bill *your* Anthropic key. To require a password, add an
+  environment variable named `APP_PASSWORD` (in `.env.local` locally, and in
+  Vercel → Settings → Environment Variables) and redeploy. Once set, visitors
+  must enter that password before they can run any search. Leave it unset to keep
+  the app open. The password is checked on the server, so it also blocks anyone
+  trying to call the API directly.
 
 ## Changing things later
 

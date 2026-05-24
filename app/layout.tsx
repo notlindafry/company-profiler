@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Hiring Manager Profiler",
+  title: "Tech Risk Profiler",
   description:
-    "Research an executive on the live web and get a clean, sourced profile for interview prep.",
+    "Research an executive or company on the live web and get a clean, sourced profile for interview prep.",
+  // Ask search engines not to index or list this site.
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({

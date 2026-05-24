@@ -1,5 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { cookies } from "next/headers";
 import { researchExecutive, researchCompany } from "@/lib/research";
+import { COOKIE_NAME, isAuthorized } from "@/lib/auth";
 
 // Run on the Node.js runtime (the Anthropic SDK needs it), and give the
 // function room to finish — research can take 20-60 seconds. On Vercel's Hobby
@@ -12,6 +14,16 @@ export async function POST(req: Request) {
     return Response.json(
       { error: "Server is missing ANTHROPIC_API_KEY. See the README setup steps." },
       { status: 500 }
+    );
+  }
+
+  // Enforce the password gate here too, so the API (and your API budget) is
+  // protected even if someone calls it directly without using the web page.
+  const token = (await cookies()).get(COOKIE_NAME)?.value;
+  if (!isAuthorized(token)) {
+    return Response.json(
+      { error: "Not authorized. Please enter the password." },
+      { status: 401 }
     );
   }
 
