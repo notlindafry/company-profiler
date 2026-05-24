@@ -7,9 +7,9 @@
 export const MODEL = "claude-sonnet-4-6";
 
 // How many web searches Claude may run per research request. Higher = more
-// thorough, but slower. The API route allows up to 300s (Vercel Pro), so there
-// is room to be thorough. Raise for deeper research, lower for speed/cost.
-export const MAX_WEB_SEARCHES = 10;
+// thorough, but slower. 8 with "medium" effort (see lib/research.ts) keeps even
+// large subjects comfortably within the time limit. Raise/lower to taste.
+export const MAX_WEB_SEARCHES = 8;
 
 // Limit research to materials from roughly the last N years. Foundational/
 // historical facts (company founding & IPO date, education, career history) are
