@@ -10,6 +10,11 @@ export const MODEL = "claude-sonnet-4-6";
 // thorough but slower and more expensive.
 export const MAX_WEB_SEARCHES = 10;
 
+// Limit research to materials from roughly the last N years. Foundational/
+// historical facts (company founding & IPO date, education, career history) are
+// exempt from this limit — see lib/prompt.ts.
+export const RECENCY_YEARS = 5;
+
 // ---------------------------------------------------------------------------
 // "About me" — used ONLY to tailor the final "Fit & Angle" section of each
 // profile. Edit this to match your own background.

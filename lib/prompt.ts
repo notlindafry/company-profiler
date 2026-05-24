@@ -1,4 +1,21 @@
-import { ABOUT_ME } from "./config";
+import { ABOUT_ME, RECENCY_YEARS } from "./config";
+
+// Tells the model to limit searches to recent material, while exempting the
+// foundational/historical facts that are inherently older. `exceptions`
+// describes which fields are exempt for this profile type.
+function recencyGuidance(exceptions: string): string {
+  const now = new Date();
+  const today = now.toISOString().slice(0, 10);
+  const cutoffYear = now.getFullYear() - RECENCY_YEARS;
+  return `
+Recency requirement:
+- Today's date is ${today}. Limit your searches and findings to materials from
+  roughly the last ${RECENCY_YEARS} years (published ${cutoffYear} or later). Add
+  date qualifiers to your queries and disregard older results.
+- EXCEPTION: ${exceptions} Capture these accurately regardless of how far back
+  they go.
+`.trim();
+}
 
 export const SYSTEM_PROMPT = `
 You are a research assistant. You produce factual, sourced profiles — of
@@ -84,6 +101,10 @@ Research this executive and produce a sourced profile.
 
 Executive name: ${name}
 Current company: ${company}
+
+${recencyGuidance(
+  "the person's education history and full career history (previous roles — where they came from) are inherently older and must still be captured in full."
+)}
 
 ${executiveSchemaDescription()}
 
@@ -174,6 +195,10 @@ export function buildCompanyPrompt(company: string): string {
 Research this company and produce a sourced profile.
 
 Company: ${company}
+
+${recencyGuidance(
+  "the company's foundational history — its founding date and IPO date — is inherently older and must still be captured."
+)}
 
 ${companySchemaDescription()}
 
