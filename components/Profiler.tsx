@@ -155,7 +155,7 @@ export default function Profiler() {
               <p className="text-slate-700">
                 Searching the web and building the{" "}
                 {mode === "company" ? "company" : "executive"} profile… this
-                usually takes 20–60 seconds.
+                usually takes 30–90 seconds, sometimes longer for big companies.
               </p>
             </div>
           </div>
