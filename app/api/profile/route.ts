@@ -34,7 +34,11 @@ export async function POST(req: Request) {
     return Response.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const { name, company } = (body ?? {}) as { name?: string; company?: string };
+  const { name, company, detail } = (body ?? {}) as {
+    name?: string;
+    company?: string;
+    detail?: string;
+  };
 
   if (!company?.trim()) {
     return Response.json(
@@ -48,7 +52,12 @@ export async function POST(req: Request) {
   try {
     // With a name: research the executive. Name left blank: research the company.
     if (name?.trim()) {
-      const profile = await researchExecutive(client, name.trim(), company.trim());
+      const profile = await researchExecutive(
+        client,
+        name.trim(),
+        company.trim(),
+        detail?.trim() || undefined
+      );
       return Response.json({ kind: "executive", profile });
     }
     const profile = await researchCompany(client, company.trim());

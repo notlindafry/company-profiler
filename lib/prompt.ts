@@ -95,12 +95,28 @@ Notes on specific fields:
 `.trim();
 }
 
-export function buildExecutivePrompt(name: string, company: string): string {
+export function buildExecutivePrompt(
+  name: string,
+  company: string,
+  detail?: string
+): string {
+  const trimmed = detail?.trim();
+  const disambiguation = trimmed
+    ? `
+
+Use this additional detail to identify the correct person (more than one person
+may share this name at the company): "${trimmed}". Treat it as the key
+disambiguator — if it is a LinkedIn URL, use it as the authoritative identity
+anchor (public info only; do not log in or scrape). If you cannot confirm the
+subject matches this detail, do NOT profile the wrong person; explain the
+mismatch in "unknowns".`
+    : "";
+
   return `
 Research this executive and produce a sourced profile.
 
 Executive name: ${name}
-Current company: ${company}
+Current company: ${company}${disambiguation}
 
 ${recencyGuidance(
   "the person's education history and full career history (previous roles — where they came from) are inherently older and must still be captured in full."

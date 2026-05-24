@@ -93,11 +93,12 @@ async function runResearch<T>(client: Anthropic, prompt: string): Promise<T> {
 export function researchExecutive(
   client: Anthropic,
   name: string,
-  company: string
+  company: string,
+  detail?: string
 ): Promise<ExecutiveProfile> {
   return runResearch<ExecutiveProfile>(
     client,
-    buildExecutivePrompt(name, company)
+    buildExecutivePrompt(name, company, detail)
   );
 }
 

@@ -12,6 +12,7 @@ type Result =
 export default function Profiler() {
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
+  const [detail, setDetail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Result | null>(null);
@@ -32,7 +33,7 @@ export default function Profiler() {
       const res = await fetch("/api/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, company }),
+        body: JSON.stringify({ name, company, detail }),
       });
       // Session expired or not logged in — reload to show the password screen.
       if (res.status === 401) {
@@ -128,6 +129,31 @@ export default function Profiler() {
               />
             </div>
           </div>
+
+          {name.trim() && (
+            <div className="mt-4">
+              <label
+                htmlFor="detail"
+                className="block text-sm font-medium text-slate-700"
+              >
+                Role or identifying detail{" "}
+                <span className="font-normal text-slate-400">(optional)</span>
+              </label>
+              <input
+                id="detail"
+                type="text"
+                value={detail}
+                onChange={(e) => setDetail(e.target.value)}
+                placeholder="e.g. Chief Risk Officer, or a LinkedIn profile URL"
+                disabled={loading}
+                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100"
+              />
+              <p className="mt-1 text-xs text-slate-400">
+                Helps pick the right person when several share the name (a
+                LinkedIn URL is the most precise).
+              </p>
+            </div>
+          )}
 
           <button
             type="submit"
