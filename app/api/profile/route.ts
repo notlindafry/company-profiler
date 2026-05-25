@@ -3,11 +3,12 @@ import { cookies } from "next/headers";
 import { researchExecutive, researchCompany } from "@/lib/research";
 import { COOKIE_NAME, isAuthorized } from "@/lib/auth";
 
-// Run on the Node.js runtime (the Anthropic SDK needs it), and give the
-// function room to finish — research can take 20-60 seconds. On Vercel's Hobby
-// plan this is capped lower; see the README for plan notes.
+// Run on the Node.js runtime (the Anthropic SDK needs it). Thorough live-web
+// research can run several minutes, so allow a long ceiling. Pro with Fluid
+// Compute supports up to ~800s; if a deploy rejects this value or lookups still
+// cut off at ~5 min, enable Fluid Compute in Vercel (Settings -> Functions).
 export const runtime = "nodejs";
-export const maxDuration = 300;
+export const maxDuration = 600;
 
 export async function POST(req: Request) {
   if (!process.env.ANTHROPIC_API_KEY) {
