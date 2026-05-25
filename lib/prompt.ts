@@ -132,7 +132,7 @@ Executive name: ${name}
 Current company: ${company}${disambiguation}
 
 ${recencyGuidance(
-  "the person's education (degrees and institutions) is foundational and may predate the window."
+  "the person's education history and full career history (previous roles — where they came from) are inherently older and must still be captured in full."
 )}
 
 ${executiveSchemaDescription()}
