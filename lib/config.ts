@@ -7,13 +7,8 @@
 export const MODEL = "claude-sonnet-4-6";
 
 // How many web searches Claude may run per research request. Higher = more
-// thorough, but slower. Kept tight so even heavily-documented subjects finish
-// well within the time limit. Raise/lower to taste.
-export const MAX_WEB_SEARCHES = 5;
-
-// Research effort: "low" (fastest), "medium", or "high" (most thorough/slowest).
-// Lower effort finishes faster and is far less likely to hit the time limit.
-export const RESEARCH_EFFORT: "low" | "medium" | "high" = "low";
+// thorough but slower. Raise/lower to taste.
+export const MAX_WEB_SEARCHES = 10;
 
 // Limit research to materials from roughly the last N years. Foundational/
 // historical facts (company founding & IPO date, education, career history) are

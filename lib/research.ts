@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { MODEL, MAX_WEB_SEARCHES, RESEARCH_EFFORT } from "./config";
+import { MODEL, MAX_WEB_SEARCHES } from "./config";
 import {
   SYSTEM_PROMPT,
   buildExecutivePrompt,
@@ -21,10 +21,6 @@ function extractJson(text: string): string {
   return candidate.slice(start, end + 1);
 }
 
-// Stop research before the serverless function's hard limit (300s) so we can
-// return a clear message instead of being killed mid-flight.
-const RESEARCH_BUDGET_MS = 240_000;
-
 // Shared research loop: send the prompt, let the web search tool run, and parse
 // the JSON profile out of the final message. Used for both executive and
 // company lookups.
@@ -33,75 +29,33 @@ async function runResearch<T>(client: Anthropic, prompt: string): Promise<T> {
     { role: "user", content: prompt },
   ];
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), RESEARCH_BUDGET_MS);
-
   let finalMessage: Anthropic.Message | undefined;
 
-  try {
-    // One search pass, then the forced wrap-up below. A single pass keeps the
-    // search phase short so the wrap-up always has time to run before the
-    // budget — that wrap-up is what guarantees a finished profile.
-    for (let attempt = 0; attempt < 1; attempt++) {
-      const stream = client.messages.stream(
+  // The web search tool runs a server-side loop. If it hits its internal
+  // iteration cap it returns stop_reason "pause_turn"; we re-send to continue.
+  // We stream to keep the connection alive during the research.
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const stream = client.messages.stream({
+      model: MODEL,
+      max_tokens: 16000,
+      system: SYSTEM_PROMPT,
+      tools: [
         {
-          model: MODEL,
-          max_tokens: 16000,
-          // Effort is configurable in lib/config.ts; lower finishes faster.
-          output_config: { effort: RESEARCH_EFFORT },
-          system: SYSTEM_PROMPT,
-          tools: [
-            {
-              type: "web_search_20260209",
-              name: "web_search",
-              max_uses: MAX_WEB_SEARCHES,
-            },
-          ],
-          messages,
+          type: "web_search_20260209",
+          name: "web_search",
+          max_uses: MAX_WEB_SEARCHES,
         },
-        { signal: controller.signal }
-      );
+      ],
+      messages,
+    });
 
-      finalMessage = await stream.finalMessage();
+    finalMessage = await stream.finalMessage();
 
-      if (finalMessage.stop_reason === "pause_turn") {
-        messages.push({ role: "assistant", content: finalMessage.content });
-        continue;
-      }
-      break;
+    if (finalMessage.stop_reason === "pause_turn") {
+      messages.push({ role: "assistant", content: finalMessage.content });
+      continue;
     }
-
-    // If it still wants to keep searching, force a final answer: re-send with
-    // searching disabled so the model MUST output the JSON from what it has.
-    if (finalMessage && finalMessage.stop_reason === "pause_turn") {
-      messages.push({
-        role: "user",
-        content:
-          'Stop researching now. Using only what you have already found, output the final JSON object in a ```json fence. Mark anything you could not confirm as "Not found", and put low-confidence items in "unknowns". Do not request any more tools.',
-      });
-      const wrapUp = client.messages.stream(
-        {
-          model: MODEL,
-          max_tokens: 16000,
-          output_config: { effort: RESEARCH_EFFORT },
-          system: SYSTEM_PROMPT,
-          // No tools here — the model cannot search and must output the JSON
-          // from what it already gathered.
-          messages,
-        },
-        { signal: controller.signal }
-      );
-      finalMessage = await wrapUp.finalMessage();
-    }
-  } catch (err) {
-    if (controller.signal.aborted) {
-      throw new Error(
-        "Research took too long for this subject and was stopped. Try researching the person and the company separately, or remove the extra detail field."
-      );
-    }
-    throw err;
-  } finally {
-    clearTimeout(timer);
+    break;
   }
 
   if (!finalMessage) {
