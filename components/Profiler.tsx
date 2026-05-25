@@ -60,8 +60,14 @@ export default function Profiler() {
       }
 
       if (!res.ok) {
-        const msg = (parsed as { error?: string }).error;
-        throw new Error(msg || "Research failed. Please try again.");
+        const errVal = (parsed as { error?: unknown }).error;
+        const msg =
+          typeof errVal === "string"
+            ? errVal
+            : errVal
+              ? JSON.stringify(errVal)
+              : "Research failed. Please try again.";
+        throw new Error(msg);
       }
 
       setResult(parsed as Result);

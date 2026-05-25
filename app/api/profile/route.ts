@@ -66,8 +66,21 @@ export async function POST(req: Request) {
     return Response.json({ kind: "company", profile });
   } catch (err) {
     console.error("Research failed:", err);
-    const message =
-      err instanceof Error ? err.message : "Something went wrong during research.";
+    let message = "Something went wrong during research.";
+    if (err instanceof Anthropic.APIError) {
+      const detail =
+        err.error && typeof err.error === "object"
+          ? JSON.stringify(err.error)
+          : err.message;
+      message = `Research provider error (${err.status ?? "?"}): ${detail}`.slice(
+        0,
+        500
+      );
+    } else if (err instanceof Error) {
+      message = err.message || err.name;
+    } else if (typeof err === "string") {
+      message = err;
+    }
     return Response.json({ error: message }, { status: 502 });
   }
 }
