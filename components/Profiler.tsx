@@ -185,9 +185,10 @@ export default function Profiler() {
             <div className="flex items-center gap-3">
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
               <p className="text-slate-700">
-                Searching the web and building the{" "}
-                {mode === "company" ? "company" : "executive"} profile… this
-                usually takes 30–90 seconds, sometimes longer for big companies.
+                Searching the live web and building the{" "}
+                {mode === "company" ? "company" : "executive"} profile… deep
+                lookups can take 4–6 minutes, so hang tight — you can leave this
+                tab open.
               </p>
             </div>
           </div>
