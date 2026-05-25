@@ -21,21 +21,17 @@ function extractJson(text: string): string {
   return candidate.slice(start, end + 1);
 }
 
-// Shared research loop: send the prompt, let the web search tool run, and parse
-// the JSON profile out of the final message. Used for both executive and
-// company lookups.
+// Shared research loop: let the web search tool run, then parse the JSON profile
+// out of the final message. Used for both executive and company lookups.
 async function runResearch<T>(client: Anthropic, prompt: string): Promise<T> {
   const messages: Anthropic.MessageParam[] = [
     { role: "user", content: prompt },
   ];
 
-  let finalMessage: Anthropic.Message | undefined;
-
-  // The web search tool runs a server-side loop. If it hits its internal
-  // iteration cap it returns stop_reason "pause_turn"; we re-send to continue.
-  // We stream to keep the connection alive during the research.
-  for (let attempt = 0; attempt < 6; attempt++) {
-    const stream = client.messages.stream({
+  // First pass: let the model search the web. We stream to keep the connection
+  // alive during the research.
+  let finalMessage = await client.messages
+    .stream({
       model: MODEL,
       max_tokens: 16000,
       system: SYSTEM_PROMPT,
@@ -47,19 +43,28 @@ async function runResearch<T>(client: Anthropic, prompt: string): Promise<T> {
         },
       ],
       messages,
+    })
+    .finalMessage();
+
+  // If the model wants to keep searching (common for low-profile subjects whose
+  // details mostly aren't public), force it to finish: re-send with NO tools so
+  // it must output the JSON from what it has, marking gaps as "Not found"
+  // instead of searching until the hosting time limit.
+  if (finalMessage.stop_reason === "pause_turn") {
+    messages.push({ role: "assistant", content: finalMessage.content });
+    messages.push({
+      role: "user",
+      content:
+        'Stop researching now. Using only what you have already found, output the final JSON object in a ```json fence. Mark anything you could not confirm as "Not found", and put low-confidence items in "unknowns". Do not request any more tools.',
     });
-
-    finalMessage = await stream.finalMessage();
-
-    if (finalMessage.stop_reason === "pause_turn") {
-      messages.push({ role: "assistant", content: finalMessage.content });
-      continue;
-    }
-    break;
-  }
-
-  if (!finalMessage) {
-    throw new Error("No response from the model.");
+    finalMessage = await client.messages
+      .stream({
+        model: MODEL,
+        max_tokens: 16000,
+        system: SYSTEM_PROMPT,
+        messages,
+      })
+      .finalMessage();
   }
 
   if (finalMessage.stop_reason === "refusal") {
