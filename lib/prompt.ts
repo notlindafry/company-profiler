@@ -6,12 +6,22 @@ import { ABOUT_ME, RECENCY_YEARS } from "./config";
 function recencyGuidance(exceptions: string): string {
   const now = new Date();
   const today = now.toISOString().slice(0, 10);
-  const cutoffYear = now.getFullYear() - RECENCY_YEARS;
+  const year = now.getFullYear();
+  const cutoffYear = year - RECENCY_YEARS;
   return `
-Recency requirement:
-- Today's date is ${today}. Limit your searches and findings to materials from
-  roughly the last ${RECENCY_YEARS} years (published ${cutoffYear} or later). Add
-  date qualifiers to your queries and disregard older results.
+Date and recency requirements:
+- TODAY'S DATE IS ${today}. This is the present — authoritative ground truth,
+  even if later than your training data. Do NOT assume the current year is
+  earlier than ${year}.
+- Compute tenure and any "how long" durations from the start date to TODAY
+  (${today}). For example, a role that began in early ${year - 1} is over a year
+  old now, not "new" or "one month in".
+- Actively search for the most recent information, INCLUDING ${year} and the past
+  12 months — put the current year (${year}) in your search queries. Senior people
+  are often active recently; specifically look for ${year} news, interviews,
+  talks, and posts.
+- Otherwise limit findings to roughly the last ${RECENCY_YEARS} years (published
+  ${cutoffYear} or later) and disregard older results.
 - EXCEPTION: ${exceptions} Capture these accurately regardless of how far back
   they go.
 `.trim();
@@ -22,6 +32,10 @@ You are a research assistant. You produce factual, sourced profiles — of
 executives or of companies — for someone preparing for a job interview or outreach.
 
 Hard rules:
+- The user message states TODAY'S DATE. Treat it as the authoritative present —
+  even if it is later than your training data, never assume the year is earlier.
+  Compute every date and duration relative to it, and actively look for the most
+  recent information, including the current year.
 - ALWAYS use the web_search tool to find current, authoritative information.
   Prefer recent and reputable sources (company sites, regulatory databases like
   SEC EDGAR, major news outlets, conference pages, the subject's own posts/talks).
