@@ -39,10 +39,10 @@ async function runResearch<T>(client: Anthropic, prompt: string): Promise<T> {
   let finalMessage: Anthropic.Message | undefined;
 
   try {
-    // The web search tool runs a server-side loop. If it hits its internal
-    // iteration cap it returns stop_reason "pause_turn"; we re-send to continue.
-    // Capped at a couple of attempts so a thorough subject can't spiral.
-    for (let attempt = 0; attempt < 2; attempt++) {
+    // One search pass, then the forced wrap-up below. A single pass keeps the
+    // search phase short so the wrap-up always has time to run before the
+    // budget — that wrap-up is what guarantees a finished profile.
+    for (let attempt = 0; attempt < 1; attempt++) {
       const stream = client.messages.stream(
         {
           model: MODEL,
