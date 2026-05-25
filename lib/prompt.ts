@@ -10,18 +10,13 @@ function recencyGuidance(exceptions: string): string {
   const cutoffYear = year - RECENCY_YEARS;
   return `
 Date and recency requirements:
-- TODAY'S DATE IS ${today}. This is the present — authoritative ground truth,
-  even if later than your training data. Do NOT assume the current year is
-  earlier than ${year}.
+- TODAY'S DATE IS ${today}. Treat it as the authoritative present, even if later
+  than your training data; do not assume the current year is earlier than ${year}.
 - Compute tenure and any "how long" durations from the start date to TODAY
   (${today}). For example, a role that began in early ${year - 1} is over a year
   old now, not "new" or "one month in".
-- Actively search for the most recent information, INCLUDING ${year} and the past
-  12 months — put the current year (${year}) in your search queries. Senior people
-  are often active recently; specifically look for ${year} news, interviews,
-  talks, and posts.
-- Otherwise limit findings to roughly the last ${RECENCY_YEARS} years (published
-  ${cutoffYear} or later) and disregard older results.
+- Limit findings to roughly the last ${RECENCY_YEARS} years (published
+  ${cutoffYear} or later) and prefer the most recent; disregard older results.
 - EXCEPTION: ${exceptions} Capture these accurately regardless of how far back
   they go.
 `.trim();
