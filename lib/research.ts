@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { MODEL, MAX_WEB_SEARCHES } from "./config";
+import { MODEL, MAX_WEB_SEARCHES, RESEARCH_EFFORT } from "./config";
 import {
   SYSTEM_PROMPT,
   buildExecutivePrompt,
@@ -41,15 +41,14 @@ async function runResearch<T>(client: Anthropic, prompt: string): Promise<T> {
   try {
     // The web search tool runs a server-side loop. If it hits its internal
     // iteration cap it returns stop_reason "pause_turn"; we re-send to continue.
-    // Capped at a few attempts so a thorough subject can't spiral indefinitely.
-    for (let attempt = 0; attempt < 3; attempt++) {
+    // Capped at a couple of attempts so a thorough subject can't spiral.
+    for (let attempt = 0; attempt < 2; attempt++) {
       const stream = client.messages.stream(
         {
           model: MODEL,
           max_tokens: 16000,
-          // "medium" effort is thorough but much faster than "high", which can
-          // over-explore on big subjects and run past the time limit.
-          output_config: { effort: "medium" },
+          // Effort is configurable in lib/config.ts; lower finishes faster.
+          output_config: { effort: RESEARCH_EFFORT },
           system: SYSTEM_PROMPT,
           tools: [
             {
@@ -70,6 +69,35 @@ async function runResearch<T>(client: Anthropic, prompt: string): Promise<T> {
         continue;
       }
       break;
+    }
+
+    // If it still wants to keep searching, force a final answer: re-send with
+    // searching disabled so the model MUST output the JSON from what it has.
+    if (finalMessage && finalMessage.stop_reason === "pause_turn") {
+      messages.push({
+        role: "user",
+        content:
+          'Stop researching now. Using only what you have already found, output the final JSON object in a ```json fence. Mark anything you could not confirm as "Not found", and put low-confidence items in "unknowns". Do not request any more tools.',
+      });
+      const wrapUp = client.messages.stream(
+        {
+          model: MODEL,
+          max_tokens: 16000,
+          output_config: { effort: RESEARCH_EFFORT },
+          system: SYSTEM_PROMPT,
+          tools: [
+            {
+              type: "web_search_20260209",
+              name: "web_search",
+              max_uses: MAX_WEB_SEARCHES,
+            },
+          ],
+          tool_choice: { type: "none" },
+          messages,
+        },
+        { signal: controller.signal }
+      );
+      finalMessage = await wrapUp.finalMessage();
     }
   } catch (err) {
     if (controller.signal.aborted) {

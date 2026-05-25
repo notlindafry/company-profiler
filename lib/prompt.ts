@@ -35,6 +35,10 @@ Hard rules:
 - Add anything you are unsure about, or could not confirm, to the "unknowns" list.
 - Make sure you have the RIGHT subject. If you are not confident you found the
   correct person or company, say so clearly in "unknowns".
+- Be efficient and decisive: gather the most important facts with a handful of
+  searches, then produce the JSON. Do not aim for exhaustive coverage — if
+  something isn't quickly found, mark it "Not found" and move on. A sourced,
+  partial profile delivered promptly is better than searching endlessly.
 
 Your final answer must be a single JSON object wrapped in a \`\`\`json code fence,
 matching the requested schema exactly, with NO other text after it.
