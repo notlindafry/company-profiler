@@ -10,7 +10,21 @@ import { COOKIE_NAME, isAuthorized } from "@/lib/auth";
 export const runtime = "nodejs";
 export const maxDuration = 600;
 
+function describeError(err: unknown): string {
+  if (err instanceof Anthropic.APIError) {
+    const detail =
+      err.error && typeof err.error === "object"
+        ? JSON.stringify(err.error)
+        : err.message;
+    return `Research provider error (${err.status ?? "?"}): ${detail}`.slice(0, 500);
+  }
+  if (err instanceof Error) return err.message || err.name;
+  if (typeof err === "string") return err;
+  return "Something went wrong during research.";
+}
+
 export async function POST(req: Request) {
+  // --- Pre-stream checks: these can still return real HTTP status codes. ---
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json(
       { error: "Server is missing ANTHROPIC_API_KEY. See the README setup steps." },
@@ -18,8 +32,8 @@ export async function POST(req: Request) {
     );
   }
 
-  // Enforce the password gate here too, so the API (and your API budget) is
-  // protected even if someone calls it directly without using the web page.
+  // Enforce the password gate here too, so the API (and your budget) is
+  // protected even if someone calls it directly without the web page.
   const token = (await cookies()).get(COOKIE_NAME)?.value;
   if (!isAuthorized(token)) {
     return Response.json(
@@ -42,44 +56,64 @@ export async function POST(req: Request) {
   };
 
   if (!company?.trim()) {
-    return Response.json(
-      { error: "Please provide a company." },
-      { status: 400 }
-    );
+    return Response.json({ error: "Please provide a company." }, { status: 400 });
   }
 
-  const client = new Anthropic(); // reads ANTHROPIC_API_KEY from the environment
+  const client = new Anthropic();
+  const trimmedName = name?.trim();
+  const trimmedCompany = company.trim();
+  const trimmedDetail = detail?.trim() || undefined;
 
-  try {
-    // With a name: research the executive. Name left blank: research the company.
-    if (name?.trim()) {
-      const profile = await researchExecutive(
-        client,
-        name.trim(),
-        company.trim(),
-        detail?.trim() || undefined
-      );
-      return Response.json({ kind: "executive", profile });
-    }
-    const profile = await researchCompany(client, company.trim());
-    return Response.json({ kind: "company", profile });
-  } catch (err) {
-    console.error("Research failed:", err);
-    let message = "Something went wrong during research.";
-    if (err instanceof Anthropic.APIError) {
-      const detail =
-        err.error && typeof err.error === "object"
-          ? JSON.stringify(err.error)
-          : err.message;
-      message = `Research provider error (${err.status ?? "?"}): ${detail}`.slice(
-        0,
-        500
-      );
-    } else if (err instanceof Error) {
-      message = err.message || err.name;
-    } else if (typeof err === "string") {
-      message = err;
-    }
-    return Response.json({ error: message }, { status: 502 });
-  }
+  // --- Stream newline-delimited JSON. Research takes minutes, so we emit
+  // periodic {"type":"ping"} keep-alives to stop the connection going idle and
+  // being dropped (which surfaces as "failed to fetch"), then a final
+  // {"type":"result",...} or {"type":"error",...}. ---
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      const send = (obj: unknown) => {
+        try {
+          controller.enqueue(encoder.encode(JSON.stringify(obj) + "\n"));
+        } catch {
+          // Controller already closed — nothing to do.
+        }
+      };
+
+      send({ type: "ping" }); // flush something immediately
+      const heartbeat = setInterval(() => send({ type: "ping" }), 15000);
+
+      try {
+        if (trimmedName) {
+          const profile = await researchExecutive(
+            client,
+            trimmedName,
+            trimmedCompany,
+            trimmedDetail
+          );
+          send({ type: "result", kind: "executive", profile });
+        } else {
+          const profile = await researchCompany(
+            client,
+            trimmedCompany,
+            trimmedDetail
+          );
+          send({ type: "result", kind: "company", profile });
+        }
+      } catch (err) {
+        console.error("Research failed:", err);
+        send({ type: "error", error: describeError(err) });
+      } finally {
+        clearInterval(heartbeat);
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "application/x-ndjson; charset=utf-8",
+      "Cache-Control": "no-store, no-transform",
+      "X-Accel-Buffering": "no",
+    },
+  });
 }

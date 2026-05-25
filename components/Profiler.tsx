@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ExecutiveProfile, CompanyProfile } from "@/lib/schema";
 import ProfileView from "@/components/ProfileView";
 import CompanyView from "@/components/CompanyView";
@@ -9,6 +9,12 @@ type Result =
   | { kind: "executive"; profile: ExecutiveProfile }
   | { kind: "company"; profile: CompanyProfile };
 
+function formatElapsed(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return m > 0 ? `${m}m ${s}s` : `${s}s`;
+}
+
 export default function Profiler() {
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
@@ -16,8 +22,23 @@ export default function Profiler() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Result | null>(null);
+  const [elapsed, setElapsed] = useState(0);
 
   const mode = name.trim() ? "executive" : "company";
+
+  // Count up while a lookup runs so the long wait visibly progresses.
+  useEffect(() => {
+    if (!loading) {
+      setElapsed(0);
+      return;
+    }
+    const start = Date.now();
+    const id = setInterval(
+      () => setElapsed(Math.floor((Date.now() - start) / 1000)),
+      1000
+    );
+    return () => clearInterval(id);
+  }, [loading]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -35,42 +56,66 @@ export default function Profiler() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, company, detail }),
       });
-      // Session expired or not logged in — reload to show the password screen.
+
+      // Not logged in / session expired — reload to show the password screen.
       if (res.status === 401) {
         window.location.reload();
         return;
       }
 
-      // Read the body as text first: a hosting timeout returns a non-JSON error
-      // page, and calling res.json() on that throws a confusing parse error.
-      const rawText = await res.text();
-      let parsed: unknown = null;
-      try {
-        parsed = rawText ? JSON.parse(rawText) : null;
-      } catch {
-        parsed = null;
-      }
-
-      if (parsed === null) {
+      // Errors that happen before streaming starts come back as plain JSON.
+      if (!res.ok || !res.body) {
+        const data = await res.json().catch(() => null);
         throw new Error(
-          res.status === 504 || res.status === 500
-            ? "The research ran longer than the time limit and was cut off before it finished — this can happen with very thorough lookups. Try again, or research just the person or just the company on its own."
-            : "The server returned an unexpected response. Please try again in a moment."
+          (data && data.error) || "Research failed. Please try again."
         );
       }
 
-      if (!res.ok) {
-        const errVal = (parsed as { error?: unknown }).error;
-        const msg =
-          typeof errVal === "string"
-            ? errVal
-            : errVal
-              ? JSON.stringify(errVal)
-              : "Research failed. Please try again.";
-        throw new Error(msg);
+      // Read the newline-delimited JSON stream: {"type":"ping"} keep-alives,
+      // then a final {"type":"result",...} or {"type":"error",...}.
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let finalResult: Result | null = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+          const line = buffer.slice(0, newlineIndex).trim();
+          buffer = buffer.slice(newlineIndex + 1);
+          if (!line) continue;
+
+          let msg: {
+            type?: string;
+            kind?: "executive" | "company";
+            profile?: ExecutiveProfile | CompanyProfile;
+            error?: string;
+          };
+          try {
+            msg = JSON.parse(line);
+          } catch {
+            continue;
+          }
+
+          if (msg.type === "result" && msg.kind && msg.profile) {
+            finalResult = { kind: msg.kind, profile: msg.profile } as Result;
+          } else if (msg.type === "error") {
+            throw new Error(msg.error || "Research failed. Please try again.");
+          }
+          // "ping" messages are keep-alives — ignore them.
+        }
       }
 
-      setResult(parsed as Result);
+      if (!finalResult) {
+        throw new Error(
+          "The research ended without returning a profile. Please try again."
+        );
+      }
+      setResult(finalResult);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
@@ -136,30 +181,35 @@ export default function Profiler() {
             </div>
           </div>
 
-          {name.trim() && (
-            <div className="mt-4">
-              <label
-                htmlFor="detail"
-                className="block text-sm font-medium text-slate-700"
-              >
-                Role or identifying detail{" "}
-                <span className="font-normal text-slate-400">(optional)</span>
-              </label>
-              <input
-                id="detail"
-                type="text"
-                value={detail}
-                onChange={(e) => setDetail(e.target.value)}
-                placeholder="e.g. Chief Risk Officer, or a LinkedIn profile URL"
-                disabled={loading}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100"
-              />
-              <p className="mt-1 text-xs text-slate-400">
-                Helps pick the right person when several share the name (a
-                LinkedIn URL is the most precise).
-              </p>
-            </div>
-          )}
+          <div className="mt-4">
+            <label
+              htmlFor="detail"
+              className="block text-sm font-medium text-slate-700"
+            >
+              {mode === "company"
+                ? "Website or ticker"
+                : "Role or identifying detail"}{" "}
+              <span className="font-normal text-slate-400">(optional)</span>
+            </label>
+            <input
+              id="detail"
+              type="text"
+              value={detail}
+              onChange={(e) => setDetail(e.target.value)}
+              placeholder={
+                mode === "company"
+                  ? "e.g. acme.com or NASDAQ: ACME"
+                  : "e.g. Chief Risk Officer, or a LinkedIn profile URL"
+              }
+              disabled={loading}
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100"
+            />
+            <p className="mt-1 text-xs text-slate-400">
+              {mode === "company"
+                ? "Helps pin the exact company when the name is generic (a website is the most precise)."
+                : "Helps pick the right person when several share the name (a LinkedIn URL is the most precise)."}
+            </p>
+          </div>
 
           <button
             type="submit"
@@ -188,7 +238,10 @@ export default function Profiler() {
                 Searching the live web and building the{" "}
                 {mode === "company" ? "company" : "executive"} profile… deep
                 lookups can take 4–6 minutes, so hang tight — you can leave this
-                tab open.
+                tab open.{" "}
+                <span className="whitespace-nowrap text-slate-400">
+                  ({formatElapsed(elapsed)} elapsed)
+                </span>
               </p>
             </div>
           </div>

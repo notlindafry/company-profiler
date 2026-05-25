@@ -100,7 +100,8 @@ export function researchExecutive(
 
 export function researchCompany(
   client: Anthropic,
-  company: string
+  company: string,
+  detail?: string
 ): Promise<CompanyProfile> {
-  return runResearch<CompanyProfile>(client, buildCompanyPrompt(company));
+  return runResearch<CompanyProfile>(client, buildCompanyPrompt(company, detail));
 }

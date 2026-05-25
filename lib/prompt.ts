@@ -219,11 +219,21 @@ Notes on specific fields:
 `.trim();
 }
 
-export function buildCompanyPrompt(company: string): string {
+export function buildCompanyPrompt(company: string, detail?: string): string {
+  const trimmed = detail?.trim();
+  const disambiguation = trimmed
+    ? `
+
+Use this detail to identify the exact company (company names can be ambiguous):
+"${trimmed}". If it is a website/domain or a stock ticker, treat it as the
+authoritative anchor for the entity. If you cannot confirm the company matches
+this detail, say so in "unknowns" rather than profiling a different company.`
+    : "";
+
   return `
 Research this company and produce a sourced profile.
 
-Company: ${company}
+Company: ${company}${disambiguation}
 
 ${recencyGuidance(
   "the company's foundational history — its founding date and IPO date — is inherently older and must still be captured."
