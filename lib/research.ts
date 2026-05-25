@@ -29,11 +29,13 @@ async function runResearch<T>(client: Anthropic, prompt: string): Promise<T> {
   ];
 
   // First pass: let the model search the web. We stream to keep the connection
-  // alive during the research.
+  // alive during the research. "medium" effort keeps each search step fast so
+  // the pass returns in time for the force-finish below.
   let finalMessage = await client.messages
     .stream({
       model: MODEL,
       max_tokens: 16000,
+      output_config: { effort: "medium" },
       system: SYSTEM_PROMPT,
       tools: [
         {
@@ -61,6 +63,7 @@ async function runResearch<T>(client: Anthropic, prompt: string): Promise<T> {
       .stream({
         model: MODEL,
         max_tokens: 16000,
+        output_config: { effort: "medium" },
         system: SYSTEM_PROMPT,
         messages,
       })

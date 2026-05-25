@@ -54,7 +54,7 @@ export default function Profiler() {
       if (parsed === null) {
         throw new Error(
           res.status === 504 || res.status === 500
-            ? "The research ran longer than the server allows and was cut off before it finished. On the free hosting tier this can happen with deeper lookups. Try again, or research just the person or just the company on its own."
+            ? "The research ran longer than the time limit and was cut off before it finished — this can happen with very thorough lookups. Try again, or research just the person or just the company on its own."
             : "The server returned an unexpected response. Please try again in a moment."
         );
       }
