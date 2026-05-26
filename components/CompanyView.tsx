@@ -1,4 +1,5 @@
-import type { CompanyProfile, ControversyType } from "@/lib/schema";
+import type { CompanyProfile, ControversyType, ProfileIntent } from "@/lib/schema";
+import { DEFAULT_INTENT, INTENT_META } from "@/lib/schema";
 
 function SourceLink({ url }: { url?: string }) {
   if (!url || url === "Not found") return null;
@@ -56,8 +57,15 @@ function SnapshotRow({ label, value }: { label: string; value?: string }) {
   );
 }
 
-export default function CompanyView({ profile }: { profile: CompanyProfile }) {
+export default function CompanyView({
+  profile,
+  intent = DEFAULT_INTENT,
+}: {
+  profile: CompanyProfile;
+  intent?: ProfileIntent;
+}) {
   const s = profile.snapshot;
+  const fitMeta = INTENT_META[intent];
   return (
     <article className="print-container mx-auto max-w-3xl rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
       {/* Header */}
@@ -279,12 +287,24 @@ export default function CompanyView({ profile }: { profile: CompanyProfile }) {
       </Section>
 
       {/* Fit & Angle */}
-      <Section title="Fit & Angle (tailored to you)">
+      <Section title={fitMeta.sectionTitle}>
         <div className="space-y-4 text-sm">
-          <FitList label="Why it could fit you" items={profile.fitAndAngle?.whyItCouldFitYou} />
-          <FitList label="Watch-outs" items={profile.fitAndAngle?.watchOuts} />
-          <FitList label="Talking points" items={profile.fitAndAngle?.talkingPoints} />
-          <FitList label="Smart questions to ask" items={profile.fitAndAngle?.questionsToAsk} />
+          <FitList
+            label={fitMeta.fieldLabels.whyItCouldFitYou}
+            items={profile.fitAndAngle?.whyItCouldFitYou}
+          />
+          <FitList
+            label={fitMeta.fieldLabels.watchOuts}
+            items={profile.fitAndAngle?.watchOuts}
+          />
+          <FitList
+            label={fitMeta.fieldLabels.talkingPoints}
+            items={profile.fitAndAngle?.talkingPoints}
+          />
+          <FitList
+            label={fitMeta.fieldLabels.questionsToAsk}
+            items={profile.fitAndAngle?.questionsToAsk}
+          />
         </div>
       </Section>
 

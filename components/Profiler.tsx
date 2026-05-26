@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { CompanyProfile } from "@/lib/schema";
+import type { CompanyProfile, ProfileIntent } from "@/lib/schema";
+import { DEFAULT_INTENT, INTENTS } from "@/lib/schema";
 import CompanyView from "@/components/CompanyView";
 
 function formatElapsed(seconds: number): string {
@@ -13,9 +14,13 @@ function formatElapsed(seconds: number): string {
 export default function Profiler() {
   const [company, setCompany] = useState("");
   const [detail, setDetail] = useState("");
+  const [intent, setIntent] = useState<ProfileIntent>(DEFAULT_INTENT);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CompanyProfile | null>(null);
+  // The intent that produced the displayed result, captured at submit time so the
+  // section labels don't shift if the selector is changed after results render.
+  const [resultIntent, setResultIntent] = useState<ProfileIntent>(DEFAULT_INTENT);
   const [elapsed, setElapsed] = useState(0);
 
   // Count up while a lookup runs so the long wait visibly progresses.
@@ -46,7 +51,7 @@ export default function Profiler() {
       const res = await fetch("/api/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ company, detail }),
+        body: JSON.stringify({ company, detail, intent }),
       });
 
       // Not logged in / session expired — reload to show the password screen.
@@ -103,6 +108,7 @@ export default function Profiler() {
         );
       }
       setResult(finalResult);
+      setResultIntent(intent);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
@@ -127,7 +133,52 @@ export default function Profiler() {
           onSubmit={handleSubmit}
           className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
         >
-          <div>
+          <fieldset>
+            <legend className="block text-sm font-medium text-slate-700">
+              I&apos;m evaluating this company as…
+            </legend>
+            <div className="mt-2 grid gap-2 sm:grid-cols-3">
+              {INTENTS.map((opt) => {
+                const selected = intent === opt.value;
+                return (
+                  <label
+                    key={opt.value}
+                    className={`flex cursor-pointer flex-col rounded-lg border p-3 transition ${
+                      selected
+                        ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500"
+                        : "border-slate-300 hover:border-slate-400"
+                    } ${loading ? "cursor-not-allowed opacity-60" : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="intent"
+                      value={opt.value}
+                      checked={selected}
+                      disabled={loading}
+                      onChange={() => setIntent(opt.value)}
+                      className="sr-only"
+                    />
+                    <span
+                      className={`text-sm font-medium ${
+                        selected ? "text-blue-700" : "text-slate-800"
+                      }`}
+                    >
+                      {opt.formLabel}
+                    </span>
+                    <span className="mt-0.5 text-xs text-slate-500">
+                      {opt.formHint}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+            <p className="mt-1 text-xs text-slate-400">
+              Only the closing <em>Fit &amp; Angle</em> section changes — the facts
+              stay the same.
+            </p>
+          </fieldset>
+
+          <div className="mt-4">
             <label
               htmlFor="company"
               className="block text-sm font-medium text-slate-700"
@@ -211,7 +262,7 @@ export default function Profiler() {
               Print / Save as PDF
             </button>
           </div>
-          <CompanyView profile={result} />
+          <CompanyView profile={result} intent={resultIntent} />
         </div>
       )}
     </main>

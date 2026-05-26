@@ -77,6 +77,79 @@ export interface CompanyFitAndAngle {
   questionsToAsk: string[];
 }
 
+// The lens the user is evaluating the company through. This reshapes only the
+// closing "Fit & Angle" section — the factual sections stay objective.
+//   w2         — a potential full-time role for me
+//   advisory   — a potential advisory client for Second Line Labs (my practice)
+//   investment — a network / investment bet (time, capital, advisor-investor seat)
+export type ProfileIntent = "w2" | "advisory" | "investment";
+
+export interface IntentMeta {
+  value: ProfileIntent;
+  formLabel: string; // short label on the form control
+  formHint: string; // one line under the option
+  sectionTitle: string; // heading for the Fit & Angle section in the view
+  fieldLabels: {
+    whyItCouldFitYou: string;
+    watchOuts: string;
+    talkingPoints: string;
+    questionsToAsk: string;
+  };
+}
+
+// Ordered so the form renders advisory first (the live question), with W2 last
+// so it reads as one lens among several rather than the default.
+export const INTENTS: IntentMeta[] = [
+  {
+    value: "advisory",
+    formLabel: "Advisory client",
+    formHint: "A potential Second Line Labs engagement",
+    sectionTitle: "Fit & Angle — as a Second Line Labs advisory client",
+    fieldLabels: {
+      whyItCouldFitYou: "Why they could be a fit for Second Line Labs",
+      watchOuts: "Watch-outs (as an advisory engagement)",
+      talkingPoints: "Pitch angles",
+      questionsToAsk: "Scoping questions",
+    },
+  },
+  {
+    value: "investment",
+    formLabel: "Network / investment",
+    formHint: "A relationship, bet, or advisor-investor seat",
+    sectionTitle: "Fit & Angle — as a network / investment bet",
+    fieldLabels: {
+      whyItCouldFitYou: "Why this could be worth a bet",
+      watchOuts: "Risk flags",
+      talkingPoints: "Angles to build the relationship",
+      questionsToAsk: "Diligence questions",
+    },
+  },
+  {
+    value: "w2",
+    formLabel: "Full-time (W2) role",
+    formHint: "A potential full-time seat for me",
+    sectionTitle: "Fit & Angle — as a full-time (W2) role",
+    fieldLabels: {
+      whyItCouldFitYou: "Why this role could fit you",
+      watchOuts: "Watch-outs",
+      talkingPoints: "Talking points",
+      questionsToAsk: "Smart questions to ask",
+    },
+  },
+];
+
+export const INTENT_META: Record<ProfileIntent, IntentMeta> = Object.fromEntries(
+  INTENTS.map((i) => [i.value, i])
+) as Record<ProfileIntent, IntentMeta>;
+
+// Default to the advisory lens. The user has ruled out a full-time seat, so the
+// app should not silently default to candidate framing.
+export const DEFAULT_INTENT: ProfileIntent = "advisory";
+
+export function isProfileIntent(value: unknown): value is ProfileIntent {
+  return value === "w2" || value === "advisory" || value === "investment";
+}
+
 export interface CompanyProfile {
   name: string;
   snapshot: CompanySnapshot;

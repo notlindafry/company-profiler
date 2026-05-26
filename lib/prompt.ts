@@ -1,8 +1,12 @@
 import { ABOUT_ME, RECENCY_YEARS } from "./config";
+import type { ProfileIntent } from "./schema";
 
 export const SYSTEM_PROMPT = `
 You are a research assistant. You produce factual, sourced profiles of companies
-for someone preparing for a job interview or outreach.
+for someone evaluating each company for a specific purpose — which may be a
+potential full-time role, an advisory engagement, or an investment/relationship.
+The user states that purpose; tailor ONLY the closing "fit & angle" assessment to
+it, and keep every factual section objective regardless of the purpose.
 
 Hard rules:
 - The user message states TODAY'S DATE. Treat it as the authoritative present —
@@ -137,7 +141,70 @@ Notes on specific fields:
 `.trim();
 }
 
-export function buildCompanyPrompt(company: string, detail?: string): string {
+// The "fitAndAngle" section is the only part tailored to the user, and it is
+// reframed entirely by the chosen intent. This keeps the app from defaulting to
+// a job-candidate framing the user has explicitly ruled out.
+function fitAndAngleGuidance(intent: ProfileIntent): string {
+  switch (intent) {
+    case "advisory":
+      return `
+Intent: I am evaluating this company as a potential ADVISORY CLIENT for Second
+Line Labs, my solo advisory practice (fractional / advisory GRC & Tech Risk). I am
+NOT looking to be hired full-time here. The question is whether they have a need my
+practice could serve and whether they would buy advisory help. Fill "fitAndAngle":
+- whyItCouldFitYou: 3-5 points on why they could be a strong advisory client —
+  buying signals that map to what Second Line Labs offers: scaling fast, recent
+  funding, entering or already in a regulated space, IPO / charter / audit pressure,
+  a recent breach or incident, new or vacant senior risk/security leadership, a thin
+  or nonexistent second line, or leadership churn in risk. Tie each to a concrete way
+  my practice (standing up or maturing GRC, FAIR-based quantitative risk, board /
+  regulator reporting, AI-native risk operating models) would help.
+- watchOuts: 2-4 honest flags that would make them a poor or low-probability advisory
+  client — an already-mature in-house risk function unlikely to bring in outside help,
+  signs of no budget or financial distress, too small to need a real second line, or
+  obvious conflicts.
+- talkingPoints: 3-5 specific pitch angles — hooks tied to a recent, sourced event
+  (funding, breach, regulatory filing, exec change) I could open an intro or scoping
+  conversation with.
+- questionsToAsk: 3-5 scoping / qualifying questions to size the engagement and confirm
+  the need (who owns risk today, what triggered the need, budget and timeline, board or
+  regulator pressure, in-house vs. fractional preference).`.trim();
+    case "investment":
+      return `
+Intent: I am evaluating this company as a NETWORK / INVESTMENT bet — whether it is
+worth my time, capital, relationship-building, or an advisor-investor seat. I am NOT
+evaluating it as a job for myself. Fill "fitAndAngle":
+- whyItCouldFitYou: 3-5 points on why this could be worth a bet — trajectory and
+  momentum, market and timing, team / leadership quality, funding and traction
+  signals, and any edge I would have (e.g. an advisor seat leveraging my GRC / Tech
+  Risk background in a regulated space).
+- watchOuts: 2-4 risk flags for an investment or close relationship — burn / runway
+  concerns, layoffs, legal or regulatory overhang, governance issues, competitive
+  threats, or key-person / single-point-of-failure risk.
+- talkingPoints: 3-5 angles to build the relationship — who to know, warm-intro paths,
+  and concrete value I could offer (e.g. an advisory seat on risk / compliance).
+- questionsToAsk: 3-5 diligence questions to test the bet — traction and retention,
+  runway, regulatory exposure, defensibility / moat, and what the next 12-18 months
+  hinge on.`.trim();
+    case "w2":
+      return `
+Intent: I am evaluating this company as a potential FULL-TIME (W2) role for myself.
+Fill "fitAndAngle":
+- whyItCouldFitYou: 3-5 points on whether this company matches what I would take a
+  full-time seat for (size, sector, regulatory posture, whether it likely needs a real
+  second-line GRC / Tech-Risk mandate with a TEAM to lead — not a solo IC seat).
+- watchOuts: 2-4 honest flags I should weigh (recent layoffs, instability, legal /
+  regulatory overhang, signs the role would be a solo IC seat or lack a real mandate).
+- talkingPoints: 3-5 specific things I could raise in an interview.
+- questionsToAsk: 3-5 smart, specific questions about the company or the role.`.trim();
+  }
+}
+
+export function buildCompanyPrompt(
+  company: string,
+  detail?: string,
+  intent: ProfileIntent = "advisory"
+): string {
   const trimmed = detail?.trim();
   const disambiguation = trimmed
     ? `
@@ -159,15 +226,11 @@ ${recencyGuidance(
 
 ${companySchemaDescription()}
 
-After the factual sections, fill in "fitAndAngle", tailored to ME using the
-background below. Specifically:
-- whyItCouldFitYou: 3-5 points on whether this company matches what I'm targeting
-  (size, sector, regulatory posture, whether it likely needs a real second-line
-  GRC/Tech-Risk mandate with a team to lead).
-- watchOuts: 2-4 honest flags I should weigh (e.g. recent layoffs, instability,
-  legal/regulatory overhang, signs the role might be a solo IC seat).
-- talkingPoints: 3-5 specific things I could raise in an interview.
-- questionsToAsk: 3-5 smart, specific questions I could ask about the company or role.
+The factual sections above are objective and do NOT change based on my intent.
+Only "fitAndAngle" is tailored to me, and it is framed entirely by my intent below.
+Do NOT steer toward a full-time role unless the intent is explicitly W2.
+
+${fitAndAngleGuidance(intent)}
 
 About me (use ONLY for the fitAndAngle section):
 ${ABOUT_ME}
