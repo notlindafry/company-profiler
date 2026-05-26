@@ -1,11 +1,14 @@
 # Company Profiler
 
-A small web app for job-search prep. Type a **company** (optionally a website or
-ticker to pin it), click **Research**, and the app searches the live web with
-Claude and returns a clean, sourced profile you can read (and print) before an
-interview or outreach — products, milestones (funding/IPO), controversies
-(breaches, lawsuits), 10-K/8-K highlights, regulatory filings (e.g. OCC), major
-customers, and a tailored fit/angle.
+A small web app for sizing up a company. Pick the **lens** you're evaluating it
+through (a full-time W2 role, an advisory client for your practice, or a network /
+investment bet), type a **company** (optionally a website or ticker to pin it),
+click **Research**, and the app searches the live web with Claude and returns a
+clean, sourced profile you can read (and print) — products, milestones
+(funding/IPO), controversies (breaches, lawsuits), 10-K/8-K highlights, regulatory
+filings (e.g. OCC), major customers, and a **Fit & Angle** section framed entirely
+by the lens you chose. The facts stay the same across lenses; only Fit & Angle
+changes, so the readout doesn't quietly default to a job-candidate framing.
 
 Built with Next.js + TypeScript + Tailwind CSS, using the Anthropic API with the
 web search tool. The API key is read on the server only and is never exposed to
@@ -90,7 +93,12 @@ the browser.
 
 - **Use a different / newer model:** edit `MODEL` in `lib/config.ts`.
 - **Update your background** (for the *Fit & Angle* section): edit `ABOUT_ME` in
-  `lib/config.ts`.
+  `lib/config.ts`. It feeds all three lenses, so keep both your advisory practice
+  and your W2 criteria there.
+- **Add / rename / reword the evaluation lenses:** edit `INTENTS` (form labels,
+  section title, field labels) in `lib/schema.ts` and the matching per-lens
+  guidance in `fitAndAngleGuidance` in `lib/prompt.ts`. The default lens is set by
+  `DEFAULT_INTENT` in `lib/schema.ts`.
 - **Make research faster/cheaper or more thorough:** change `MAX_WEB_SEARCHES` in
   `lib/config.ts`.
 

@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { cookies } from "next/headers";
 import { researchCompany } from "@/lib/research";
+import { DEFAULT_INTENT, isProfileIntent } from "@/lib/schema";
 import { COOKIE_NAME, isAuthorized } from "@/lib/auth";
 
 // Run on the Node.js runtime (the Anthropic SDK needs it). Thorough live-web
@@ -49,9 +50,10 @@ export async function POST(req: Request) {
     return Response.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const { company, detail } = (body ?? {}) as {
+  const { company, detail, intent } = (body ?? {}) as {
     company?: string;
     detail?: string;
+    intent?: string;
   };
 
   if (!company?.trim()) {
@@ -61,6 +63,7 @@ export async function POST(req: Request) {
   const client = new Anthropic();
   const trimmedCompany = company.trim();
   const trimmedDetail = detail?.trim() || undefined;
+  const resolvedIntent = isProfileIntent(intent) ? intent : DEFAULT_INTENT;
 
   // --- Stream newline-delimited JSON. Research takes minutes, so we emit
   // periodic {"type":"ping"} keep-alives to stop the connection going idle and
@@ -84,7 +87,8 @@ export async function POST(req: Request) {
         const profile = await researchCompany(
           client,
           trimmedCompany,
-          trimmedDetail
+          trimmedDetail,
+          resolvedIntent
         );
         send({ type: "result", profile });
       } catch (err) {

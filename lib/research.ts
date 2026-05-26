@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { MODEL, MAX_WEB_SEARCHES } from "./config";
 import { SYSTEM_PROMPT, buildCompanyPrompt } from "./prompt";
-import type { CompanyProfile } from "./schema";
+import type { CompanyProfile, ProfileIntent } from "./schema";
 
 // Pull the JSON object out of Claude's final answer. We instruct the model to
 // wrap it in a ```json fence; we take the LAST fenced block (the final answer),
@@ -20,10 +20,11 @@ function extractJson(text: string): string {
 export async function researchCompany(
   client: Anthropic,
   company: string,
-  detail?: string
+  detail?: string,
+  intent: ProfileIntent = "advisory"
 ): Promise<CompanyProfile> {
   const messages: Anthropic.MessageParam[] = [
-    { role: "user", content: buildCompanyPrompt(company, detail) },
+    { role: "user", content: buildCompanyPrompt(company, detail, intent) },
   ];
 
   let finalMessage: Anthropic.Message | undefined;
