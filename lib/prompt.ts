@@ -79,6 +79,9 @@ and empty arrays [] for sections with no findings):
   "secFilingsHighlights": [
     { "filingType": string, "date": string, "highlight": string, "url": string }
   ],
+  "riskFactors": [
+    { "category": string, "summary": string, "source": string }
+  ],
   "regulatoryFilings": [
     { "agency": string, "summary": string, "date": string, "url": string }
   ],
@@ -98,16 +101,26 @@ Notes on specific fields:
 - snapshot.status: whether public (with ticker), private, or a subsidiary.
 - overview: 2-4 plain-language sentences on what the company actually does.
 - products: their main products or service lines.
-- milestones: major events, most recent first — funding rounds (Series A/B/C...),
-  IPO, large acquisitions, major launches, leadership changes.
-- controversies: data breaches, lawsuits, enforcement actions, major public
-  criticism. Be factual and cite a source for each; do not editorialize.
+- milestones: major events from roughly the LAST 3 YEARS, most recent first —
+  funding rounds (Series A/B/C...), IPO, large acquisitions, major launches,
+  leadership changes. (Founding and IPO dates may be older.)
+- controversies: be thorough and current here. Include data breaches, lawsuits,
+  enforcement actions, layoffs / reductions in force (RIFs), executive
+  departures, and major public criticism — ACTIVELY search recent news for these,
+  especially events in the current year. Be factual and cite a source for each;
+  do not editorialize.
 - secFilingsHighlights: notable items from 10-K (annual), 10-Q (quarterly), and
   8-K (material events) filings. Use SEC EDGAR (sec.gov) and link to the filing.
   If the company is private and does not file with the SEC, return [].
+- riskFactors: summarize the key risks the company itself discloses in the
+  "Risk Factors" section (Item 1A) of its most recent 10-K, plus any material
+  updates in the latest 10-Q. Capture the most significant ones across categories
+  (regulatory, legal, market/competitive, operational, financial, cybersecurity,
+  etc.), each in plain language with the filing as the source. If the company is
+  private / does not file with the SEC, return [].
 - regulatoryFilings: filings or actions with regulators relevant to the company's
   industry — e.g. OCC, SEC, FINRA, FDA, state regulators — including new license
-  or charter applications. Link to the source.
+  or charter applications. Include recent ones from the current year. Link to the source.
 - majorCustomers: notable named customers or partners, with a source each.
 `.trim();
 }

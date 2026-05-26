@@ -29,13 +29,13 @@ export async function researchCompany(
   let finalMessage: Anthropic.Message | undefined;
 
   // Bounded search phase (2 passes). We use the direct web_search_20250305 tool
-  // (no code-execution "dynamic filtering"), which is much faster per search,
-  // and run at low effort so the model doesn't over-deliberate between searches.
+  // (no code-execution "dynamic filtering"), which is much faster per search;
+  // that speed lets us afford medium effort + more searches for fuller coverage.
   for (let attempt = 0; attempt < 2; attempt++) {
     const stream = client.messages.stream({
       model: MODEL,
       max_tokens: 16000,
-      output_config: { effort: "low" },
+      output_config: { effort: "medium" },
       system: SYSTEM_PROMPT,
       tools: [
         {
@@ -68,7 +68,7 @@ export async function researchCompany(
       .stream({
         model: MODEL,
         max_tokens: 16000,
-        output_config: { effort: "low" },
+        output_config: { effort: "medium" },
         system: SYSTEM_PROMPT,
         messages,
       })

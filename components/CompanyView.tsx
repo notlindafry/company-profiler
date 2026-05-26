@@ -179,6 +179,27 @@ export default function CompanyView({ profile }: { profile: CompanyProfile }) {
         )}
       </Section>
 
+      {/* Risk factors (from filings) */}
+      <Section title="Risk factors (from SEC filings)">
+        {profile.riskFactors?.length ? (
+          <ul className="space-y-2">
+            {profile.riskFactors.map((r, i) => (
+              <li key={i} className="text-sm">
+                {has(r.category) && (
+                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium uppercase text-slate-500">
+                    {r.category}
+                  </span>
+                )}{" "}
+                <span className="text-slate-700">{r.summary}</span>
+                <SourceLink url={r.source} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <Empty />
+        )}
+      </Section>
+
       {/* Regulatory filings */}
       <Section title="Regulatory filings & actions">
         {profile.regulatoryFilings?.length ? (

@@ -39,6 +39,12 @@ export interface SecFilingHighlight {
   url: string;
 }
 
+export interface RiskFactor {
+  category: string; // e.g. "Regulatory", "Legal", "Market", "Operational", "Cybersecurity"
+  summary: string; // the disclosed risk, summarized in plain language
+  source: string; // link to the 10-K / 10-Q it came from
+}
+
 export interface RegulatoryFiling {
   agency: string; // e.g. "OCC", "SEC", "FINRA", "state regulator"
   summary: string; // e.g. "Applied for national bank charter"
@@ -67,6 +73,7 @@ export interface CompanyProfile {
   milestones: CompanyMilestone[];
   controversies: CompanyControversy[];
   secFilingsHighlights: SecFilingHighlight[];
+  riskFactors: RiskFactor[];
   regulatoryFilings: RegulatoryFiling[];
   majorCustomers: MajorCustomer[];
   fitAndAngle: CompanyFitAndAngle;
