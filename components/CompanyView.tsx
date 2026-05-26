@@ -135,6 +135,44 @@ export default function CompanyView({ profile }: { profile: CompanyProfile }) {
         )}
       </Section>
 
+      {/* Leadership changes */}
+      <Section title="Leadership changes">
+        {profile.execChanges?.length ? (
+          <ul className="space-y-2">
+            {profile.execChanges.map((c, i) => (
+              <li key={i} className="text-sm text-slate-700">
+                {has(c.date) && (
+                  <span className="font-medium text-slate-900">{c.date}: </span>
+                )}
+                {c.summary}
+                <SourceLink url={c.source} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <Empty />
+        )}
+      </Section>
+
+      {/* Layoffs / RIFs */}
+      <Section title="Layoffs / reductions in force">
+        {profile.layoffs?.length ? (
+          <ul className="space-y-2">
+            {profile.layoffs.map((l, i) => (
+              <li key={i} className="text-sm text-slate-700">
+                {has(l.date) && (
+                  <span className="font-medium text-slate-900">{l.date}: </span>
+                )}
+                {l.summary}
+                <SourceLink url={l.source} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm italic text-slate-400">None found.</p>
+        )}
+      </Section>
+
       {/* Controversies */}
       <Section title="Controversies (breaches, lawsuits, actions)">
         {profile.controversies?.length ? (

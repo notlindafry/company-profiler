@@ -73,6 +73,12 @@ and empty arrays [] for sections with no findings):
   "milestones": [
     { "date": string, "summary": string, "source": string }
   ],
+  "execChanges": [
+    { "summary": string, "date": string, "source": string }
+  ],
+  "layoffs": [
+    { "summary": string, "date": string, "source": string }
+  ],
   "controversies": [
     { "type": "breach" | "lawsuit" | "regulatory" | "other", "summary": string, "date": string, "source": string }
   ],
@@ -104,11 +110,17 @@ Notes on specific fields:
 - milestones: major events from roughly the LAST 3 YEARS, most recent first —
   funding rounds (Series A/B/C...), IPO, large acquisitions, major launches,
   leadership changes. (Founding and IPO dates may be older.)
-- controversies: be thorough and current here. Include data breaches, lawsuits,
-  enforcement actions, layoffs / reductions in force (RIFs), executive
-  departures, and major public criticism — ACTIVELY search recent news for these,
-  especially events in the current year. Be factual and cite a source for each;
-  do not editorialize.
+- execChanges: leadership changes, most recent first — C-suite (CEO/CFO/CISO/etc.)
+  and board appointments, departures, and promotions. Say who, the role, what
+  changed (stepped down / appointed / promoted), and the date. Capture changes
+  announced via press release. ACTIVELY search recent news; source each.
+- layoffs: reductions in force / layoffs over roughly the last few years, most
+  recent first — include the scale (headcount or %), the date, the stated reason
+  if given, and a source. ACTIVELY search recent news, especially the current year.
+- controversies: data breaches, lawsuits, enforcement actions, and major public
+  criticism — ACTIVELY search recent news, especially the current year. (Layoffs
+  and leadership changes have their own sections above — don't duplicate them
+  here.) Be factual and cite a source for each; do not editorialize.
 - secFilingsHighlights: notable items from 10-K (annual), 10-Q (quarterly), and
   8-K (material events) filings. Use SEC EDGAR (sec.gov) and link to the filing.
   If the company is private and does not file with the SEC, return [].

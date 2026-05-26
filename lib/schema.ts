@@ -23,6 +23,18 @@ export interface CompanyMilestone {
   source?: string;
 }
 
+export interface ExecChange {
+  summary: string; // e.g. "CEO Jane Doe stepped down; COO promoted to CEO", "Named new CISO ..."
+  date: string;
+  source?: string;
+}
+
+export interface Layoff {
+  summary: string; // e.g. "Cut ~20% of staff (~1,000 roles), citing ..."
+  date: string;
+  source?: string;
+}
+
 export type ControversyType = "breach" | "lawsuit" | "regulatory" | "other";
 
 export interface CompanyControversy {
@@ -71,6 +83,8 @@ export interface CompanyProfile {
   overview: string; // plain-language description of what they do
   products: CompanyProduct[];
   milestones: CompanyMilestone[];
+  execChanges: ExecChange[];
+  layoffs: Layoff[];
   controversies: CompanyControversy[];
   secFilingsHighlights: SecFilingHighlight[];
   riskFactors: RiskFactor[];
