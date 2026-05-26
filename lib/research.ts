@@ -30,10 +30,10 @@ async function runResearch<T>(client: Anthropic, prompt: string): Promise<T> {
 
   let finalMessage: Anthropic.Message | undefined;
 
-  // The web search tool runs a server-side loop. If it hits its internal
-  // iteration cap it returns stop_reason "pause_turn"; we re-send to continue.
-  // We stream to keep the connection alive during the research.
-  for (let attempt = 0; attempt < 6; attempt++) {
+  // Bounded search phase: a couple of passes. stop_reason "pause_turn" means the
+  // web search tool wants to keep going; we re-send to continue. Bounding this
+  // stops a heavy, very-public subject from searching until the time limit.
+  for (let attempt = 0; attempt < 2; attempt++) {
     const stream = client.messages.stream({
       model: MODEL,
       max_tokens: 16000,
@@ -55,6 +55,26 @@ async function runResearch<T>(client: Anthropic, prompt: string): Promise<T> {
       continue;
     }
     break;
+  }
+
+  // Still wants to search? Force a final answer with NO tools, so the model must
+  // write the profile from what it already gathered (gaps -> "Not found")
+  // instead of searching until the time limit. No timer, no tool_choice — the
+  // earlier problems with this step were the 5-min ceiling and those two things.
+  if (finalMessage && finalMessage.stop_reason === "pause_turn") {
+    messages.push({
+      role: "user",
+      content:
+        'Stop researching now. Using only what you have already found, output the final JSON object in a ```json fence. Mark anything you could not confirm as "Not found", and put low-confidence items in "unknowns". Do not request any more tools.',
+    });
+    finalMessage = await client.messages
+      .stream({
+        model: MODEL,
+        max_tokens: 16000,
+        system: SYSTEM_PROMPT,
+        messages,
+      })
+      .finalMessage();
   }
 
   if (!finalMessage) {
