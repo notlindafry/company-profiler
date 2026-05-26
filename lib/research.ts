@@ -1,11 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { MODEL, MAX_WEB_SEARCHES } from "./config";
-import {
-  SYSTEM_PROMPT,
-  buildExecutivePrompt,
-  buildCompanyPrompt,
-} from "./prompt";
-import type { ExecutiveProfile, CompanyProfile } from "./schema";
+import { SYSTEM_PROMPT, buildCompanyPrompt } from "./prompt";
+import type { CompanyProfile } from "./schema";
 
 // Pull the JSON object out of Claude's final answer. We instruct the model to
 // wrap it in a ```json fence; we take the LAST fenced block (the final answer),
@@ -21,26 +17,29 @@ function extractJson(text: string): string {
   return candidate.slice(start, end + 1);
 }
 
-// Shared research loop: let the web search tool run, then parse the JSON profile
-// out of the final message. Used for both executive and company lookups.
-async function runResearch<T>(client: Anthropic, prompt: string): Promise<T> {
+export async function researchCompany(
+  client: Anthropic,
+  company: string,
+  detail?: string
+): Promise<CompanyProfile> {
   const messages: Anthropic.MessageParam[] = [
-    { role: "user", content: prompt },
+    { role: "user", content: buildCompanyPrompt(company, detail) },
   ];
 
   let finalMessage: Anthropic.Message | undefined;
 
-  // Bounded search phase: a couple of passes. stop_reason "pause_turn" means the
-  // web search tool wants to keep going; we re-send to continue. Bounding this
-  // stops a heavy, very-public subject from searching until the time limit.
+  // Bounded search phase (2 passes). We use the direct web_search_20250305 tool
+  // (no code-execution "dynamic filtering"), which is much faster per search,
+  // and run at low effort so the model doesn't over-deliberate between searches.
   for (let attempt = 0; attempt < 2; attempt++) {
     const stream = client.messages.stream({
       model: MODEL,
       max_tokens: 16000,
+      output_config: { effort: "low" },
       system: SYSTEM_PROMPT,
       tools: [
         {
-          type: "web_search_20260209",
+          type: "web_search_20250305",
           name: "web_search",
           max_uses: MAX_WEB_SEARCHES,
         },
@@ -58,9 +57,7 @@ async function runResearch<T>(client: Anthropic, prompt: string): Promise<T> {
   }
 
   // Still wants to search? Force a final answer with NO tools, so the model must
-  // write the profile from what it already gathered (gaps -> "Not found")
-  // instead of searching until the time limit. No timer, no tool_choice — the
-  // earlier problems with this step were the 5-min ceiling and those two things.
+  // write the profile from what it already gathered (gaps -> "Not found").
   if (finalMessage && finalMessage.stop_reason === "pause_turn") {
     messages.push({
       role: "user",
@@ -71,6 +68,7 @@ async function runResearch<T>(client: Anthropic, prompt: string): Promise<T> {
       .stream({
         model: MODEL,
         max_tokens: 16000,
+        output_config: { effort: "low" },
         system: SYSTEM_PROMPT,
         messages,
       })
@@ -83,11 +81,10 @@ async function runResearch<T>(client: Anthropic, prompt: string): Promise<T> {
 
   if (finalMessage.stop_reason === "refusal") {
     throw new Error(
-      "The model declined to answer this request. Try a different name or company."
+      "The model declined to answer this request. Try a different company."
     );
   }
 
-  // Gather all text the model produced; the final JSON lives in the last fence.
   const fullText = finalMessage.content
     .filter((block): block is Anthropic.TextBlock => block.type === "text")
     .map((block) => block.text)
@@ -100,28 +97,8 @@ async function runResearch<T>(client: Anthropic, prompt: string): Promise<T> {
   const json = extractJson(fullText);
 
   try {
-    return JSON.parse(json) as T;
+    return JSON.parse(json) as CompanyProfile;
   } catch {
     throw new Error("The model's response was not valid JSON.");
   }
-}
-
-export function researchExecutive(
-  client: Anthropic,
-  name: string,
-  company: string,
-  detail?: string
-): Promise<ExecutiveProfile> {
-  return runResearch<ExecutiveProfile>(
-    client,
-    buildExecutivePrompt(name, company, detail)
-  );
-}
-
-export function researchCompany(
-  client: Anthropic,
-  company: string,
-  detail?: string
-): Promise<CompanyProfile> {
-  return runResearch<CompanyProfile>(client, buildCompanyPrompt(company, detail));
 }

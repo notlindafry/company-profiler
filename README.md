@@ -1,12 +1,11 @@
-# Tech Risk Profiler
+# Company Profiler
 
-A small web app for job-search prep. Type an executive's **name** and **company**,
-click **Research**, and the app searches the live web with Claude and returns a
-clean, sourced profile you can read (and print) before an interview or outreach.
-
-**Leave the Executive Name blank** and enter just a company to get a **company
-profile** instead — products, milestones (funding/IPO), controversies (breaches,
-lawsuits), 10-K/8-K highlights, regulatory filings (e.g. OCC), and major customers.
+A small web app for job-search prep. Type a **company** (optionally a website or
+ticker to pin it), click **Research**, and the app searches the live web with
+Claude and returns a clean, sourced profile you can read (and print) before an
+interview or outreach — products, milestones (funding/IPO), controversies
+(breaches, lawsuits), 10-K/8-K highlights, regulatory filings (e.g. OCC), major
+customers, and a tailored fit/angle.
 
 Built with Next.js + TypeScript + Tailwind CSS, using the Anthropic API with the
 web search tool. The API key is read on the server only and is never exposed to
@@ -23,7 +22,7 @@ the browser.
   name and the "About me" text used to tailor the *Fit & Angle* section.
 - `lib/prompt.ts` — the research instructions sent to Claude.
 - `lib/research.ts` — the code that runs the web search and reads back the result.
-- `components/ProfileView.tsx` — how the profile is displayed.
+- `components/CompanyView.tsx` — how the profile is displayed.
 
 ---
 

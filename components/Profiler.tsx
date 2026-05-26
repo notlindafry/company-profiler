@@ -1,13 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { ExecutiveProfile, CompanyProfile } from "@/lib/schema";
-import ProfileView from "@/components/ProfileView";
+import type { CompanyProfile } from "@/lib/schema";
 import CompanyView from "@/components/CompanyView";
-
-type Result =
-  | { kind: "executive"; profile: ExecutiveProfile }
-  | { kind: "company"; profile: CompanyProfile };
 
 function formatElapsed(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -16,15 +11,12 @@ function formatElapsed(seconds: number): string {
 }
 
 export default function Profiler() {
-  const [name, setName] = useState("");
   const [company, setCompany] = useState("");
   const [detail, setDetail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<Result | null>(null);
+  const [result, setResult] = useState<CompanyProfile | null>(null);
   const [elapsed, setElapsed] = useState(0);
-
-  const mode = name.trim() ? "executive" : "company";
 
   // Count up while a lookup runs so the long wait visibly progresses.
   useEffect(() => {
@@ -54,7 +46,7 @@ export default function Profiler() {
       const res = await fetch("/api/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, company, detail }),
+        body: JSON.stringify({ company, detail }),
       });
 
       // Not logged in / session expired — reload to show the password screen.
@@ -76,7 +68,7 @@ export default function Profiler() {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
-      let finalResult: Result | null = null;
+      let finalResult: CompanyProfile | null = null;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -89,20 +81,15 @@ export default function Profiler() {
           buffer = buffer.slice(newlineIndex + 1);
           if (!line) continue;
 
-          let msg: {
-            type?: string;
-            kind?: "executive" | "company";
-            profile?: ExecutiveProfile | CompanyProfile;
-            error?: string;
-          };
+          let msg: { type?: string; profile?: CompanyProfile; error?: string };
           try {
             msg = JSON.parse(line);
           } catch {
             continue;
           }
 
-          if (msg.type === "result" && msg.kind && msg.profile) {
-            finalResult = { kind: msg.kind, profile: msg.profile } as Result;
+          if (msg.type === "result" && msg.profile) {
+            finalResult = msg.profile;
           } else if (msg.type === "error") {
             throw new Error(msg.error || "Research failed. Please try again.");
           }
@@ -128,57 +115,34 @@ export default function Profiler() {
       {/* Header + form (hidden when printing) */}
       <div className="no-print">
         <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-          Tech Risk Profiler
+          Company Profiler
         </h1>
         <p className="mt-2 text-slate-600">
-          Enter an executive and their company for a person profile — or leave
-          the name blank and enter just a company for a company profile. Either
-          way we research the live web and return a clean, sourced result.
+          Enter a company and we&apos;ll research it on the live web — products,
+          milestones, controversies, SEC and regulatory filings, major customers —
+          and return a clean, sourced profile.
         </p>
 
         <form
           onSubmit={handleSubmit}
           className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
         >
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-slate-700"
-              >
-                Executive name{" "}
-                <span className="font-normal text-slate-400">(optional)</span>
-              </label>
-              <input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Jane Smith"
-                disabled={loading}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100"
-              />
-              <p className="mt-1 text-xs text-slate-400">
-                Leave blank to research the company itself.
-              </p>
-            </div>
-            <div>
-              <label
-                htmlFor="company"
-                className="block text-sm font-medium text-slate-700"
-              >
-                Company
-              </label>
-              <input
-                id="company"
-                type="text"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-                placeholder="e.g. Acme Corp"
-                disabled={loading}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100"
-              />
-            </div>
+          <div>
+            <label
+              htmlFor="company"
+              className="block text-sm font-medium text-slate-700"
+            >
+              Company
+            </label>
+            <input
+              id="company"
+              type="text"
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+              placeholder="e.g. Acme Corp"
+              disabled={loading}
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100"
+            />
           </div>
 
           <div className="mt-4">
@@ -186,9 +150,7 @@ export default function Profiler() {
               htmlFor="detail"
               className="block text-sm font-medium text-slate-700"
             >
-              {mode === "company"
-                ? "Website or ticker"
-                : "Role or identifying detail"}{" "}
+              Website or ticker{" "}
               <span className="font-normal text-slate-400">(optional)</span>
             </label>
             <input
@@ -196,18 +158,13 @@ export default function Profiler() {
               type="text"
               value={detail}
               onChange={(e) => setDetail(e.target.value)}
-              placeholder={
-                mode === "company"
-                  ? "e.g. acme.com or NASDAQ: ACME"
-                  : "e.g. Chief Risk Officer, or a LinkedIn profile URL"
-              }
+              placeholder="e.g. acme.com or NASDAQ: ACME"
               disabled={loading}
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100"
             />
             <p className="mt-1 text-xs text-slate-400">
-              {mode === "company"
-                ? "Helps pin the exact company when the name is generic (a website is the most precise)."
-                : "Helps pick the right person when several share the name (a LinkedIn URL is the most precise)."}
+              Helps pin the exact company when the name is generic (a website is
+              the most precise).
             </p>
           </div>
 
@@ -216,11 +173,7 @@ export default function Profiler() {
             disabled={loading}
             className="mt-4 inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
           >
-            {loading
-              ? "Researching…"
-              : mode === "company"
-                ? "Research company"
-                : "Research executive"}
+            {loading ? "Researching…" : "Research company"}
           </button>
         </form>
 
@@ -235,9 +188,8 @@ export default function Profiler() {
             <div className="flex items-center gap-3">
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
               <p className="text-slate-700">
-                Searching the live web and building the{" "}
-                {mode === "company" ? "company" : "executive"} profile… deep
-                lookups can take 4–6 minutes, so hang tight — you can leave this
+                Searching the live web and building the company profile… this
+                usually takes a few minutes, so hang tight — you can leave this
                 tab open.{" "}
                 <span className="whitespace-nowrap text-slate-400">
                   ({formatElapsed(elapsed)} elapsed)
@@ -259,11 +211,7 @@ export default function Profiler() {
               Print / Save as PDF
             </button>
           </div>
-          {result.kind === "executive" ? (
-            <ProfileView profile={result.profile} />
-          ) : (
-            <CompanyView profile={result.profile} />
-          )}
+          <CompanyView profile={result} />
         </div>
       )}
     </main>

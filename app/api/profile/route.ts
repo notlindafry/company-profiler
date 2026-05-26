@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { cookies } from "next/headers";
-import { researchExecutive, researchCompany } from "@/lib/research";
+import { researchCompany } from "@/lib/research";
 import { COOKIE_NAME, isAuthorized } from "@/lib/auth";
 
 // Run on the Node.js runtime (the Anthropic SDK needs it). Thorough live-web
@@ -49,8 +49,7 @@ export async function POST(req: Request) {
     return Response.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const { name, company, detail } = (body ?? {}) as {
-    name?: string;
+  const { company, detail } = (body ?? {}) as {
     company?: string;
     detail?: string;
   };
@@ -60,7 +59,6 @@ export async function POST(req: Request) {
   }
 
   const client = new Anthropic();
-  const trimmedName = name?.trim();
   const trimmedCompany = company.trim();
   const trimmedDetail = detail?.trim() || undefined;
 
@@ -83,22 +81,12 @@ export async function POST(req: Request) {
       const heartbeat = setInterval(() => send({ type: "ping" }), 15000);
 
       try {
-        if (trimmedName) {
-          const profile = await researchExecutive(
-            client,
-            trimmedName,
-            trimmedCompany,
-            trimmedDetail
-          );
-          send({ type: "result", kind: "executive", profile });
-        } else {
-          const profile = await researchCompany(
-            client,
-            trimmedCompany,
-            trimmedDetail
-          );
-          send({ type: "result", kind: "company", profile });
-        }
+        const profile = await researchCompany(
+          client,
+          trimmedCompany,
+          trimmedDetail
+        );
+        send({ type: "result", profile });
       } catch (err) {
         console.error("Research failed:", err);
         send({ type: "error", error: describeError(err) });
