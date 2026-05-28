@@ -9,7 +9,7 @@ export const MODEL = "claude-sonnet-4-6";
 // How many web searches Claude may run per search pass. The search phase is
 // bounded to 2 passes (see lib/research.ts), so total searches are capped around
 // 2x this — keeping heavy subjects within the time limit. Raise/lower to taste.
-export const MAX_WEB_SEARCHES = 8;
+export const MAX_WEB_SEARCHES = 6;
 
 // Limit research to materials from roughly the last N years. Foundational/
 // historical facts (company founding & IPO date, education, career history) are

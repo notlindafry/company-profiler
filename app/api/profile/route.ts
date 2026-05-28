@@ -83,18 +83,27 @@ export async function POST(req: Request) {
       send({ type: "ping" }); // flush something immediately
       const heartbeat = setInterval(() => send({ type: "ping" }), 15000);
 
-      try {
-        const profile = await researchCompany(
-          client,
-          trimmedCompany,
-          trimmedDetail,
-          resolvedIntent
+      // Fire before the function's infrastructure ceiling so the client always
+      // gets a clean {"type":"error"} frame instead of a bare TCP drop.
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(
+          () => reject(new Error("Research timed out — the company may be too complex. Try reducing the scope or searching again.")),
+          540_000 // 9 min, safely inside the 600s maxDuration ceiling
         );
+      });
+
+      try {
+        const profile = await Promise.race([
+          researchCompany(client, trimmedCompany, trimmedDetail, resolvedIntent),
+          timeoutPromise,
+        ]);
         send({ type: "result", profile });
       } catch (err) {
         console.error("Research failed:", err);
         send({ type: "error", error: describeError(err) });
       } finally {
+        clearTimeout(timeoutId);
         clearInterval(heartbeat);
         controller.close();
       }
