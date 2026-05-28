@@ -79,10 +79,10 @@ export interface CompanyFitAndAngle {
 
 // The lens the user is evaluating the company through. This reshapes only the
 // closing "Fit & Angle" section — the factual sections stay objective.
-//   w2         — a potential full-time role for me
-//   advisory   — a potential advisory client for Second Line Labs (my practice)
-//   investment — a network / investment bet (time, capital, advisor-investor seat)
-export type ProfileIntent = "w2" | "advisory" | "investment";
+//   w2       — a potential full-time role for me
+//   advisory — a potential advisory client for Second Line Labs (my practice)
+//   network  — a relationship bet (time, advisor-investor seat, warm intros)
+export type ProfileIntent = "w2" | "advisory" | "network";
 
 export interface IntentMeta {
   value: ProfileIntent;
@@ -97,9 +97,20 @@ export interface IntentMeta {
   };
 }
 
-// Ordered so the form renders advisory first (the live question), with W2 last
-// so it reads as one lens among several rather than the default.
+// Ordered left-to-right: full-time W2 role, advisory client, network.
 export const INTENTS: IntentMeta[] = [
+  {
+    value: "w2",
+    formLabel: "Full-time (W2) role",
+    formHint: "A potential full-time seat for me",
+    sectionTitle: "Fit & Angle — as a full-time (W2) role",
+    fieldLabels: {
+      whyItCouldFitYou: "Why this role could fit you",
+      watchOuts: "Watch-outs",
+      talkingPoints: "Talking points",
+      questionsToAsk: "Smart questions to ask",
+    },
+  },
   {
     value: "advisory",
     formLabel: "Advisory client",
@@ -113,27 +124,15 @@ export const INTENTS: IntentMeta[] = [
     },
   },
   {
-    value: "investment",
-    formLabel: "Network / investment",
-    formHint: "A relationship, bet, or advisor-investor seat",
-    sectionTitle: "Fit & Angle — as a network / investment bet",
+    value: "network",
+    formLabel: "Network",
+    formHint: "A relationship worth building (intros, advisor seat, time)",
+    sectionTitle: "Fit & Angle — as a network relationship",
     fieldLabels: {
-      whyItCouldFitYou: "Why this could be worth a bet",
-      watchOuts: "Risk flags",
-      talkingPoints: "Angles to build the relationship",
-      questionsToAsk: "Diligence questions",
-    },
-  },
-  {
-    value: "w2",
-    formLabel: "Full-time (W2) role",
-    formHint: "A potential full-time seat for me",
-    sectionTitle: "Fit & Angle — as a full-time (W2) role",
-    fieldLabels: {
-      whyItCouldFitYou: "Why this role could fit you",
+      whyItCouldFitYou: "Why this relationship could be worth building",
       watchOuts: "Watch-outs",
-      talkingPoints: "Talking points",
-      questionsToAsk: "Smart questions to ask",
+      talkingPoints: "Angles to build the relationship",
+      questionsToAsk: "Questions to ask",
     },
   },
 ];
@@ -147,7 +146,7 @@ export const INTENT_META: Record<ProfileIntent, IntentMeta> = Object.fromEntries
 export const DEFAULT_INTENT: ProfileIntent = "advisory";
 
 export function isProfileIntent(value: unknown): value is ProfileIntent {
-  return value === "w2" || value === "advisory" || value === "investment";
+  return value === "w2" || value === "advisory" || value === "network";
 }
 
 export interface CompanyProfile {

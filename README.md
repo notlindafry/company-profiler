@@ -1,8 +1,8 @@
 # Company Profiler
 
 A small web app for sizing up a company. Pick the **lens** you're evaluating it
-through (a full-time W2 role, an advisory client for your practice, or a network /
-investment bet), type a **company** (optionally a website or ticker to pin it),
+through (a full-time W2 role, an advisory client for your practice, or a network
+relationship), type a **company** (optionally a website or ticker to pin it),
 click **Research**, and the app searches the live web with Claude and returns a
 clean, sourced profile you can read (and print) — products, milestones
 (funding/IPO), controversies (breaches, lawsuits), 10-K/8-K highlights, regulatory

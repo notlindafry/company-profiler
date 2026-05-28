@@ -19,7 +19,7 @@ export const RECENCY_YEARS = 5;
 // ---------------------------------------------------------------------------
 // "About me" — used ONLY to tailor the final "Fit & Angle" section of each
 // profile. Edit this to match your own background. The Fit & Angle section is
-// reframed by the selected intent (W2 / advisory / investment); this background
+// reframed by the selected intent (W2 / advisory / network); this background
 // feeds all three lenses, so keep both the practice and the W2 criteria here.
 // ---------------------------------------------------------------------------
 export const ABOUT_ME = `
