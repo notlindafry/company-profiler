@@ -222,14 +222,84 @@ diligence-for-investing. Fill "fitAndAngle":
     case "w2":
       return `
 Intent: I am evaluating this company as a potential FULL-TIME (W2) role for myself.
-Fill "fitAndAngle":
-- whyItCouldFitYou: 3-5 points on whether this company matches what I would take a
-  full-time seat for (size, sector, regulatory posture, whether it likely needs a real
-  second-line GRC / Tech-Risk mandate with a TEAM to lead — not a solo IC seat).
-- watchOuts: 2-4 honest flags I should weigh (recent layoffs, instability, legal /
-  regulatory overhang, signs the role would be a solo IC seat or lack a real mandate).
-- talkingPoints: 3-5 specific things I could raise in an interview.
-- questionsToAsk: 3-5 smart, specific questions about the company or the role.`.trim();
+There is NO job description here — work ONLY from the company research above. Assess
+what the research actually surfaced; do NOT speculate about specific role scope or
+team structure unless you found direct evidence. Where evidence is absent, say so
+plainly rather than inventing it.
+
+Apply this rubric, then map your findings onto the four "fitAndAngle" fields.
+
+COMPANY-LEVEL FIT — does the company plausibly justify a director-level second-line
+risk function with real scope?
+- Scale & regulatory exposure: revenue or valuation above $2B; sustained compliance
+  obligations (SOX, FedRAMP, HIPAA, PCI-DSS, financial-services regulation, DORA, or
+  a sector equivalent); audit-committee or board-level risk-governance language in
+  10-K filings or proxy statements; regulatory enforcement history that signals real
+  external scrutiny. Concern if: no meaningful regulatory pressure; governance looks
+  cosmetic; or the company is too early-stage to have a second-line mandate.
+- GRC & risk org signals: LinkedIn headcount for GRC / Risk / Compliance / InfoSec;
+  job-posting history that implies a team rather than a single hire; a CISO or
+  equivalent with public visibility; security/risk presence at industry conferences
+  or in technical writing. Concern if: no visible CISO or risk leadership; GRC/risk
+  headcount appears to be one person or is effectively invisible; no internal risk
+  capability beyond point-in-time compliance work.
+- Risk maturity & culture: is risk treated as decision-support or a compliance
+  checkbox? Look for CISO/risk messaging that emphasizes business enablement and
+  speed over gatekeeping; engineering-blog content mentioning risk/security reviews
+  as part of delivery; internal tooling/automation in the risk or security function;
+  10-K risk language that goes beyond boilerplate to reflect actual business-risk
+  framing. Concern if: governance is buried under Legal with no direct security
+  reporting line; Glassdoor or news signals suggest repeated incidents without
+  meaningful organizational response.
+
+DIFFERENTIATOR FIT — would my specific edges be valued? Flag plainly if a fit looks
+weak, and say so if the evidence was simply absent.
+- Quantitative risk: leadership that frames risk in business impact or financial
+  terms rather than control coverage (CISO messaging, board language in 10-Ks, or
+  postings referencing risk quantification or business-aligned metrics).
+- AI-native operating models: an engineering-forward culture that expects internal
+  functions to build and automate (internal-tooling mentions in engineering writing,
+  automation-forward hiring patterns, or explicit AI-governance investment).
+- Player-coach leadership: this only matters if there is a TEAM to lead — note
+  whether the research suggests an existing function or a build-from-scratch
+  situation, and flag explicitly if the evidence was absent either way.
+
+TENURE NARRATIVE CONTEXT — I have two recent short tenures. Judge whether anything
+specific to THIS company (its own layoff history, org restructuring, sector norms,
+or leadership culture) makes either narrative easier or harder to land in
+conversation:
+- Netflix (~10 months, 2024-2025): my role was eliminated by my direct manager, who
+  was subsequently fired; the GRC function was absorbed under threat detection.
+  Harder to explain at companies that weight stability signals heavily; easier at
+  companies with visible turbulence of their own.
+- Coinbase (~6 months, 2025-2026): a public 14% RIF. I retain many warm contacts
+  from Coinbase despite the short tenure — surface this if the company has any
+  connection to crypto, fintech, or has itself been through a comparable
+  restructuring. Easier to explain at companies that understand market-driven org
+  changes.
+
+Now fill "fitAndAngle":
+- whyItCouldFitYou: a one-verdict-in-bullets read on company-level viability as a W2
+  target, based ONLY on what the research showed — 3-5 points that NAME what is
+  CONFIRMED, what looks PROMISING BUT UNCONFIRMED, and the company-level and
+  differentiator signals that actually surfaced (scale, regulatory posture, an
+  existing risk function with a real mandate and a team to lead — not a solo IC
+  seat). Be explicit about confidence.
+- watchOuts: 2-4 genuine concerns the research raised — any "Concern if" trigger it
+  hit (no regulatory pressure, cosmetic governance, invisible/solo GRC, no visible
+  CISO, checkbox culture, governance buried under Legal), weak or absent
+  differentiator fit, plus whether this company makes the Netflix or Coinbase tenure
+  story harder to land.
+- talkingPoints: 2-3 specific ANGLES I should lead with if I pursue this company,
+  each grounded in a real, sourced signal about their risk posture, regulatory
+  environment, or leadership priorities — including how to frame the Netflix/Coinbase
+  tenures given this company's own turbulence, and surfacing my warm Coinbase
+  contacts where there is a crypto/fintech connection.
+- questionsToAsk: 3-5 things the research COULD NOT determine and that I'd need to
+  confirm through a conversation or a warm contact before investing significant
+  effort — phrased as questions (e.g. who owns risk today and whether there is a team
+  to lead, the real mandate and reporting line, whether quantitative / AI-native risk
+  work would be valued).`.trim();
   }
 }
 
