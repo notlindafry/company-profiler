@@ -286,6 +286,27 @@ export default function CompanyView({
         )}
       </Section>
 
+      {/* Company culture */}
+      <Section title="Company culture">
+        {profile.culture &&
+        (has(profile.culture.rtoPolicy) ||
+          has(profile.culture.benefits) ||
+          has(profile.culture.sentiment) ||
+          has(profile.culture.workLifeBalance) ||
+          has(profile.culture.generalNotes)) ? (
+          <div className="space-y-3 text-sm">
+            <CultureRow label="Return to office" value={profile.culture.rtoPolicy} />
+            <CultureRow label="Benefits & perks" value={profile.culture.benefits} />
+            <CultureRow label="Employee sentiment" value={profile.culture.sentiment} />
+            <CultureRow label="Work-life balance" value={profile.culture.workLifeBalance} />
+            <CultureRow label="General culture" value={profile.culture.generalNotes} />
+            <SourceLink url={profile.culture.source} />
+          </div>
+        ) : (
+          <Empty />
+        )}
+      </Section>
+
       {/* Fit & Angle */}
       <Section title={fitMeta.sectionTitle}>
         <div className="space-y-4 text-sm">
@@ -321,6 +342,16 @@ export default function CompanyView({
         )}
       </Section>
     </article>
+  );
+}
+
+function CultureRow({ label, value }: { label: string; value?: string }) {
+  if (!has(value)) return null;
+  return (
+    <div>
+      <dt className="font-semibold text-slate-800">{label}</dt>
+      <dd className="text-slate-700">{value}</dd>
+    </div>
   );
 }
 

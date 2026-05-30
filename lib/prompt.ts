@@ -98,6 +98,14 @@ and empty arrays [] for sections with no findings):
   "majorCustomers": [
     { "name": string, "note": string, "source": string }
   ],
+  "culture": {
+    "rtoPolicy": string,
+    "benefits": string,
+    "sentiment": string,
+    "workLifeBalance": string,
+    "generalNotes": string,
+    "source": string
+  },
   "fitAndAngle": {
     "whyItCouldFitYou": [string],
     "watchOuts": [string],
@@ -138,6 +146,21 @@ Notes on specific fields:
   industry — e.g. OCC, SEC, FINRA, FDA, state regulators — including new license
   or charter applications. Include recent ones from the current year. Link to the source.
 - majorCustomers: notable named customers or partners, with a source each.
+- culture: a concise read on the company's culture as an employer, drawn from
+  public sources (company careers page, Glassdoor, Comparably, LinkedIn, news,
+  "best place to work" lists). Fill each field in plain language, citing a source:
+  * rtoPolicy: current return-to-office stance — fully remote, hybrid (note days
+    in office if stated), or office-first. Check the careers page and recent news.
+  * benefits: notable benefits and perks (health coverage, 401(k)/retirement
+    match, parental/family leave, PTO/unlimited PTO, equity, wellness, learning
+    budget, etc.).
+  * sentiment: overall employee sentiment — e.g. a Glassdoor/Comparably rating,
+    "best place to work" recognition, and recurring themes in recent reviews.
+  * workLifeBalance: assessment of hours, flexibility, and any burnout/crunch
+    signals from reviews or reporting.
+  * generalNotes: other cultural signals — stated values, DEI initiatives, team
+    vibe, turnover, or notable culture-related controversies.
+  Use "Not found" for any field you cannot source.
 `.trim();
 }
 

@@ -70,6 +70,15 @@ export interface MajorCustomer {
   source?: string;
 }
 
+export interface CompanyCulture {
+  rtoPolicy: string; // return-to-office stance, e.g. "Fully remote", "Hybrid — 3 days/week in office", "Office-first"
+  benefits: string; // notable benefits & perks, e.g. health, 401(k) match, parental leave, equity, PTO
+  sentiment: string; // overall employee sentiment, e.g. Glassdoor rating, "best place to work" awards, review themes
+  workLifeBalance: string; // assessment of hours, flexibility, burnout/crunch signals
+  generalNotes: string; // values, DEI, team vibe, turnover, or other cultural notes
+  source?: string;
+}
+
 export interface CompanyFitAndAngle {
   whyItCouldFitYou: string[];
   watchOuts: string[];
@@ -162,6 +171,7 @@ export interface CompanyProfile {
   riskFactors: RiskFactor[];
   regulatoryFilings: RegulatoryFiling[];
   majorCustomers: MajorCustomer[];
+  culture: CompanyCulture;
   fitAndAngle: CompanyFitAndAngle;
   unknowns: string[];
 }
