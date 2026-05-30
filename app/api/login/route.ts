@@ -5,6 +5,9 @@ import {
   passwordMatches,
   isGateEnabled,
 } from "@/lib/auth";
+import { LOGIN_RATE_LIMIT, LOGIN_RATE_WINDOW_MS } from "@/lib/config";
+import { rateLimit, clientIp } from "@/lib/ratelimit";
+import { readJsonBody, MAX_PASSWORD_LEN } from "@/lib/validation";
 
 export const runtime = "nodejs";
 
@@ -14,16 +17,29 @@ export async function POST(req: Request) {
     return Response.json({ ok: true });
   }
 
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return Response.json({ error: "Invalid request." }, { status: 400 });
+  // Throttle password attempts per IP to blunt online brute forcing.
+  const ip = clientIp(req);
+  const limited = rateLimit(`login:${ip}`, LOGIN_RATE_LIMIT, LOGIN_RATE_WINDOW_MS);
+  if (!limited.ok) {
+    return Response.json(
+      { error: "Too many attempts. Please wait and try again." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSeconds) } }
+    );
   }
 
-  const { password } = (body ?? {}) as { password?: string };
+  const body = await readJsonBody(req);
+  if (!body.ok) {
+    return Response.json({ error: body.error }, { status: body.status });
+  }
 
-  if (!password || !passwordMatches(password)) {
+  const { password } = (body.data ?? {}) as { password?: string };
+
+  if (
+    !password ||
+    typeof password !== "string" ||
+    password.length > MAX_PASSWORD_LEN ||
+    !passwordMatches(password)
+  ) {
     return Response.json({ error: "Incorrect password." }, { status: 401 });
   }
 

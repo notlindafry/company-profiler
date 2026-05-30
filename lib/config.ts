@@ -17,6 +17,27 @@ export const MAX_WEB_SEARCHES = 6;
 export const RECENCY_YEARS = 5;
 
 // ---------------------------------------------------------------------------
+// Abuse / cost guards. Each profile run is expensive (Claude + web searches +
+// minutes of compute), so the API is rate-limited per client IP. Tune to taste.
+// These are enforced in lib/ratelimit.ts; see the note there about in-memory
+// (per-instance) limits on serverless.
+// ---------------------------------------------------------------------------
+
+// Research endpoint: at most PROFILE_RATE_LIMIT runs per window, and no more
+// than PROFILE_MAX_CONCURRENT in flight at once, per IP.
+export const PROFILE_RATE_LIMIT = 10;
+export const PROFILE_RATE_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+export const PROFILE_MAX_CONCURRENT = 2;
+
+// Login endpoint: throttle password attempts per IP to blunt brute forcing.
+export const LOGIN_RATE_LIMIT = 8;
+export const LOGIN_RATE_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
+// How long to reuse a previously researched profile for an identical request
+// (same company + detail + intent) before re-running the pipeline.
+export const RESULT_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+
+// ---------------------------------------------------------------------------
 // "About me" — used ONLY to tailor the final "Fit & Angle" section of each
 // profile. Edit this to match your own background. The Fit & Angle section is
 // reframed by the selected intent (W2 / advisory / network); this background
