@@ -102,6 +102,18 @@ function fitAndAngle(value: unknown): CompanyFitAndAngle {
         };
       })
       .filter((j) => j.title !== NF && j.url !== NF),
+    careersUrl: optStr(o.careersUrl),
+    // Likewise, a closed-role signal is only useful if we can link to evidence.
+    filledRoleSignals: list(o.filledRoleSignals)
+      .map((p) => {
+        const x = rec(p);
+        return {
+          summary: str(x.summary),
+          date: str(x.date),
+          source: str(x.source),
+        };
+      })
+      .filter((s) => s.summary !== NF && s.source !== NF),
   };
 }
 

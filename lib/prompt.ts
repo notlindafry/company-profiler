@@ -119,6 +119,10 @@ and empty arrays [] for sections with no findings):
       "questionsToAsk": [string],
       "jobPostings": [
         { "title": string, "location": string, "postedDate": string, "url": string, "note": string }
+      ],
+      "careersUrl": string,
+      "filledRoleSignals": [
+        { "summary": string, "date": string, "source": string }
       ]
     },
     "advisory": {
@@ -216,6 +220,25 @@ regardless of lens.
   posting. A posting MUST have a working source URL to the exact listing; if you cannot
   verify the link, do NOT include the posting. If you find no qualifying roles in the
   last 30 days, return an empty array [].
+- careersUrl: the company's main careers / open-roles page (a single VERIFIED URL), so I
+  can browse everything they have open even when nothing was posted in the last 30 days.
+  Use "Not found" if you cannot locate it.
+- filledRoleSignals: search for signs that a role RELEVANT TO ME was RECENTLY FILLED or
+  its posting CLOSED — a strong "they probably do not need me right now" signal. Look,
+  in order of reliability, for: (1) a recent senior leadership / risk / security HIRE in
+  my domain (cross-check the execChanges you already found — a new Head/Director/VP of
+  Risk/Security strongly implies the seat is taken); (2) a relevant job-board listing
+  (LinkedIn, Indeed, etc.) that now shows "no longer accepting applications" / expired
+  within roughly the last 90 days; (3) where available, an ARCHIVED snapshot
+  (web.archive.org / the Wayback Machine) of the careers page that listed a relevant role
+  which is no longer posted today. For each signal give "summary" (what was observed and
+  what it implies), "date" (when it closed / the hire was announced), and "source" — a
+  VERIFIED link (the announcement, the closed listing, or the archived page). Only
+  include a signal you can source; if a closure is inferred but unconfirmed, put it in
+  "unknowns" instead. Return [] if you find none. NOTE: detecting a removed posting is
+  best-effort — a missing listing is not proof a role was filled, so prefer confirmed
+  leadership-hire announcements and clearly-closed listings, and be appropriately
+  cautious in the wording.
 
 "advisory" — I am evaluating this company as a potential ADVISORY CLIENT for Second
 Line Labs, my solo advisory practice (fractional / advisory GRC & Tech Risk). I am NOT

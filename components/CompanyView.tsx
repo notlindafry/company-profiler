@@ -1,4 +1,8 @@
-import type { CompanyProfile, ControversyType, JobPosting } from "@/lib/schema";
+import type {
+  CompanyProfile,
+  CompanyFitAndAngle,
+  ControversyType,
+} from "@/lib/schema";
 import { INTENTS } from "@/lib/schema";
 
 function SourceLink({ url }: { url?: string }) {
@@ -326,9 +330,7 @@ export default function CompanyView({
                 label={meta.fieldLabels.questionsToAsk}
                 items={fit?.questionsToAsk}
               />
-              {fit?.jobPostings?.length ? (
-                <JobPostings postings={fit.jobPostings} />
-              ) : null}
+              {meta.value === "w2" ? <W2Hiring fit={fit} /> : null}
             </div>
           </Section>
         );
@@ -360,30 +362,91 @@ function CultureRow({ label, value }: { label: string; value?: string }) {
   );
 }
 
-function JobPostings({ postings }: { postings: JobPosting[] }) {
+function CareersLink({ url, label }: { url?: string; label: string }) {
+  if (!has(url)) return null;
   return (
-    <div>
-      <h3 className="font-semibold text-slate-800">
-        Open roles posted in the last 30 days
-      </h3>
-      <ul className="mt-1 space-y-2 text-slate-700">
-        {postings.map((job, i) => (
-          <li key={i}>
-            <span className="font-medium text-slate-900">{job.title}</span>
-            {has(job.location) ? (
-              <span className="text-slate-600"> · {job.location}</span>
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="font-medium text-blue-600 hover:underline"
+    >
+      {label}
+    </a>
+  );
+}
+
+// W2-only hiring block: roles posted in the last 30 days (with a careers-page
+// fallback when none match), plus signals that a relevant role was recently
+// filled or closed.
+function W2Hiring({ fit }: { fit?: CompanyFitAndAngle }) {
+  const postings = fit?.jobPostings ?? [];
+  const signals = fit?.filledRoleSignals ?? [];
+  const careersUrl = fit?.careersUrl;
+  return (
+    <>
+      <div>
+        <h3 className="font-semibold text-slate-800">
+          Open roles posted in the last 30 days
+        </h3>
+        {postings.length ? (
+          <>
+            <ul className="mt-1 space-y-2 text-slate-700">
+              {postings.map((job, i) => (
+                <li key={i}>
+                  <span className="font-medium text-slate-900">{job.title}</span>
+                  {has(job.location) ? (
+                    <span className="text-slate-600"> · {job.location}</span>
+                  ) : null}
+                  {has(job.postedDate) ? (
+                    <span className="text-slate-500"> · {job.postedDate}</span>
+                  ) : null}
+                  <SourceLink url={job.url} />
+                  {has(job.note) ? (
+                    <span className="block text-slate-600">{job.note}</span>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+            {has(careersUrl) ? (
+              <p className="mt-2">
+                <CareersLink url={careersUrl} label="See all open roles →" />
+              </p>
             ) : null}
-            {has(job.postedDate) ? (
-              <span className="text-slate-500"> · {job.postedDate}</span>
+          </>
+        ) : (
+          <p className="mt-1 text-slate-600">
+            No relevant roles posted in the last 30 days.{" "}
+            {has(careersUrl) ? (
+              <CareersLink url={careersUrl} label="Browse all open roles →" />
             ) : null}
-            <SourceLink url={job.url} />
-            {has(job.note) ? (
-              <span className="block text-slate-600">{job.note}</span>
-            ) : null}
-          </li>
-        ))}
-      </ul>
-    </div>
+          </p>
+        )}
+      </div>
+
+      {signals.length ? (
+        <div>
+          <h3 className="font-semibold text-slate-800">
+            Recently filled / closed roles
+          </h3>
+          <p className="mt-0.5 text-xs text-slate-400">
+            A relevant seat that was just filled likely means they don&apos;t need
+            someone like me right now.
+          </p>
+          <ul className="mt-1 space-y-2 text-slate-700">
+            {signals.map((sig, i) => (
+              <li key={i}>
+                <span>{sig.summary}</span>
+                {has(sig.date) ? (
+                  <span className="text-slate-500"> · {sig.date}</span>
+                ) : null}
+                <SourceLink url={sig.source} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </>
   );
 }
 

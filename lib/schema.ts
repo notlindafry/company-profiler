@@ -89,14 +89,27 @@ export interface JobPosting {
   note?: string; // one line on why it could be a fit
 }
 
+// A signal that a relevant senior role may have RECENTLY been filled — e.g. a
+// posting that was taken down / marked "no longer accepting applications", an
+// archived careers page that listed a relevant role now gone, or a leadership
+// hire announcement. For the W2 lens this is a "they likely don't need me right
+// now" flag.
+export interface FilledRoleSignal {
+  summary: string; // what was observed, e.g. "Director, Tech Risk posting closed"
+  date: string; // when the role closed / the hire was announced
+  source: string; // verified link: archived page, job board, or announcement
+}
+
 export interface CompanyFitAndAngle {
   whyItCouldFitYou: string[];
   watchOuts: string[];
   talkingPoints: string[];
   questionsToAsk: string[];
-  // Recent (last 30 days) open roles relevant to me. Populated for the W2 lens
-  // only; empty for the advisory and network lenses.
-  jobPostings?: JobPosting[];
+  // The following are populated for the W2 lens only; empty/absent for the
+  // advisory and network lenses.
+  jobPostings?: JobPosting[]; // open roles posted in the last 30 days
+  careersUrl?: string; // fallback link to all open roles when nothing recent matches
+  filledRoleSignals?: FilledRoleSignal[]; // recently closed/filled relevant roles
 }
 
 // The three lenses every profile is evaluated through. These reshape only the
