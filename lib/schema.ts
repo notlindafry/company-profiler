@@ -79,11 +79,24 @@ export interface CompanyCulture {
   source?: string;
 }
 
+// An open role found via live web search, used only by the W2 lens. Each entry
+// must carry a verified link to the specific posting.
+export interface JobPosting {
+  title: string;
+  location: string; // e.g. "San Francisco, CA", "Remote (US)"
+  postedDate: string; // when the role was posted; within the last 30 days
+  url: string; // verified direct link to the specific posting
+  note?: string; // one line on why it could be a fit
+}
+
 export interface CompanyFitAndAngle {
   whyItCouldFitYou: string[];
   watchOuts: string[];
   talkingPoints: string[];
   questionsToAsk: string[];
+  // Recent (last 30 days) open roles relevant to me. Populated for the W2 lens
+  // only; empty for the advisory and network lenses.
+  jobPostings?: JobPosting[];
 }
 
 // The three lenses every profile is evaluated through. These reshape only the

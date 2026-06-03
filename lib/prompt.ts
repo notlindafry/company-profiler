@@ -116,7 +116,10 @@ and empty arrays [] for sections with no findings):
       "whyItCouldFitYou": [string],
       "watchOuts": [string],
       "talkingPoints": [string],
-      "questionsToAsk": [string]
+      "questionsToAsk": [string],
+      "jobPostings": [
+        { "title": string, "location": string, "postedDate": string, "url": string, "note": string }
+      ]
     },
     "advisory": {
       "whyItCouldFitYou": [string],
@@ -202,6 +205,17 @@ regardless of lens.
   regulatory overhang, signs the role would be a solo IC seat or lack a real mandate).
 - talkingPoints: 3-5 specific things I could raise in an interview.
 - questionsToAsk: 3-5 smart, specific questions about the company or the role.
+- jobPostings: ACTIVELY use web_search to find this company's CURRENTLY OPEN job
+  postings that fit my background (senior GRC / Technology Risk leadership — Director /
+  Sr. Director / VP, and adjacent risk/security leadership). Search the company's
+  official careers/jobs page and reputable job boards. Include ONLY roles posted within
+  the LAST 30 DAYS relative to TODAY'S DATE — skip anything posted earlier or with no
+  determinable posting date. For each role provide: "title" (exact posting title),
+  "location" (city/region or "Remote"), "postedDate" (when it was posted), "note" (one
+  line on why it could fit me), and "url" — a VERIFIED, direct link to that SPECIFIC
+  posting. A posting MUST have a working source URL to the exact listing; if you cannot
+  verify the link, do NOT include the posting. If you find no qualifying roles in the
+  last 30 days, return an empty array [].
 
 "advisory" — I am evaluating this company as a potential ADVISORY CLIENT for Second
 Line Labs, my solo advisory practice (fractional / advisory GRC & Tech Risk). I am NOT

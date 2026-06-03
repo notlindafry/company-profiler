@@ -1,4 +1,4 @@
-import type { CompanyProfile, ControversyType } from "@/lib/schema";
+import type { CompanyProfile, ControversyType, JobPosting } from "@/lib/schema";
 import { INTENTS } from "@/lib/schema";
 
 function SourceLink({ url }: { url?: string }) {
@@ -326,6 +326,9 @@ export default function CompanyView({
                 label={meta.fieldLabels.questionsToAsk}
                 items={fit?.questionsToAsk}
               />
+              {fit?.jobPostings?.length ? (
+                <JobPostings postings={fit.jobPostings} />
+              ) : null}
             </div>
           </Section>
         );
@@ -353,6 +356,33 @@ function CultureRow({ label, value }: { label: string; value?: string }) {
     <div>
       <dt className="font-semibold text-slate-800">{label}</dt>
       <dd className="text-slate-700">{value}</dd>
+    </div>
+  );
+}
+
+function JobPostings({ postings }: { postings: JobPosting[] }) {
+  return (
+    <div>
+      <h3 className="font-semibold text-slate-800">
+        Open roles posted in the last 30 days
+      </h3>
+      <ul className="mt-1 space-y-2 text-slate-700">
+        {postings.map((job, i) => (
+          <li key={i}>
+            <span className="font-medium text-slate-900">{job.title}</span>
+            {has(job.location) ? (
+              <span className="text-slate-600"> · {job.location}</span>
+            ) : null}
+            {has(job.postedDate) ? (
+              <span className="text-slate-500"> · {job.postedDate}</span>
+            ) : null}
+            <SourceLink url={job.url} />
+            {has(job.note) ? (
+              <span className="block text-slate-600">{job.note}</span>
+            ) : null}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

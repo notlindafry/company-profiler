@@ -88,6 +88,20 @@ function fitAndAngle(value: unknown): CompanyFitAndAngle {
     watchOuts: strList(o.watchOuts),
     talkingPoints: strList(o.talkingPoints),
     questionsToAsk: strList(o.questionsToAsk),
+    // Drop any posting missing a title or a verified source URL — the link is
+    // the whole point, so an unsourced posting is not useful.
+    jobPostings: list(o.jobPostings)
+      .map((p) => {
+        const x = rec(p);
+        return {
+          title: str(x.title),
+          location: str(x.location),
+          postedDate: str(x.postedDate),
+          url: str(x.url),
+          note: optStr(x.note),
+        };
+      })
+      .filter((j) => j.title !== NF && j.url !== NF),
   };
 }
 
