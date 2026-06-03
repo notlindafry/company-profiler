@@ -2,6 +2,11 @@
 
 import { useEffect, useState } from "react";
 import type { CompanyProfile } from "@/lib/schema";
+import {
+  MODEL_OPTIONS,
+  DEFAULT_MODEL_TIER,
+  type ModelTier,
+} from "@/lib/config";
 import CompanyView from "@/components/CompanyView";
 
 function formatElapsed(seconds: number): string {
@@ -13,6 +18,7 @@ function formatElapsed(seconds: number): string {
 export default function Profiler() {
   const [company, setCompany] = useState("");
   const [detail, setDetail] = useState("");
+  const [model, setModel] = useState<ModelTier>(DEFAULT_MODEL_TIER);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CompanyProfile | null>(null);
@@ -46,7 +52,7 @@ export default function Profiler() {
       const res = await fetch("/api/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ company, detail }),
+        body: JSON.stringify({ company, detail, model }),
       });
 
       // Not logged in / session expired — reload to show the password screen.
@@ -169,6 +175,47 @@ export default function Profiler() {
               the most precise).
             </p>
           </div>
+
+          {/* Model selector — controls how "expensive" the analysis is. */}
+          <fieldset className="mt-4" disabled={loading}>
+            <legend className="block text-sm font-medium text-slate-700">
+              Analysis depth{" "}
+              <span className="font-normal text-slate-400">(controls cost)</span>
+            </legend>
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+              {MODEL_OPTIONS.map((opt) => {
+                const selected = model === opt.tier;
+                return (
+                  <label
+                    key={opt.tier}
+                    className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 shadow-sm transition ${
+                      selected
+                        ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500"
+                        : "border-slate-300 bg-white hover:bg-slate-50"
+                    } ${loading ? "cursor-not-allowed opacity-60" : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="model"
+                      value={opt.tier}
+                      checked={selected}
+                      onChange={() => setModel(opt.tier)}
+                      disabled={loading}
+                      className="mt-0.5 h-4 w-4 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span>
+                      <span className="block text-sm font-medium text-slate-900">
+                        {opt.label}
+                      </span>
+                      <span className="block text-xs text-slate-500">
+                        {opt.blurb}
+                      </span>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
 
           <button
             type="submit"

@@ -91,7 +91,10 @@ the browser.
 
 ## Changing things later
 
-- **Use a different / newer model:** edit `MODEL` in `lib/config.ts`.
+- **Pick the model per run:** each search has an *Analysis depth* selector —
+  Sonnet 4.6 (faster, cheaper) or Opus 4.8 (most capable, most expensive). To
+  add, remove, or swap the offered models (or change the default), edit
+  `MODEL_OPTIONS` / `DEFAULT_MODEL_TIER` in `lib/config.ts`.
 - **Update your background** (for the *Fit & Angle* section): edit `ABOUT_ME` in
   `lib/config.ts`. It feeds all three lenses, so keep both your advisory practice
   and your W2 criteria there.

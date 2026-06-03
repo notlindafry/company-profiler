@@ -2,9 +2,49 @@
 // Easy-to-change settings live here.
 // ---------------------------------------------------------------------------
 
-// The Claude model used for research. This is the latest Claude Sonnet model.
-// To change models later, edit this one line (e.g. "claude-opus-4-7").
-export const MODEL = "claude-sonnet-4-6";
+// ---------------------------------------------------------------------------
+// Selectable research models. Each run lets the user pick how "expensive" the
+// analysis is: Opus is the most capable (and priciest); Sonnet is faster and
+// cheaper. The client sends only the short `tier` keyword — never a raw model
+// ID — and the server resolves it through `resolveModel` so an untrusted value
+// can never become an arbitrary model string.
+// ---------------------------------------------------------------------------
+export type ModelTier = "opus" | "sonnet";
+
+export interface ModelOption {
+  tier: ModelTier;
+  id: string; // exact Anthropic model ID sent to the API
+  label: string; // shown in the selector
+  blurb: string; // short cost / capability hint
+}
+
+// Order = display order in the UI.
+export const MODEL_OPTIONS: ModelOption[] = [
+  {
+    tier: "sonnet",
+    id: "claude-sonnet-4-6",
+    label: "Sonnet 4.6",
+    blurb: "Faster and cheaper — solid for most lookups",
+  },
+  {
+    tier: "opus",
+    id: "claude-opus-4-8",
+    label: "Opus 4.8",
+    blurb: "Most capable, most expensive — deepest analysis",
+  },
+];
+
+// Used when the client omits a model or sends an unrecognized one.
+export const DEFAULT_MODEL_TIER: ModelTier = "sonnet";
+
+// Map an untrusted tier value to a known ModelOption, falling back to the
+// default. Always returns a valid option, so callers never see a bad model ID.
+export function resolveModel(tier: unknown): ModelOption {
+  return (
+    MODEL_OPTIONS.find((m) => m.tier === tier) ??
+    MODEL_OPTIONS.find((m) => m.tier === DEFAULT_MODEL_TIER)!
+  );
+}
 
 // How many web searches Claude may run per search pass. The search phase is
 // bounded to 2 passes (see lib/research.ts), so total searches are capped around

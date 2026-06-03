@@ -6,6 +6,7 @@ import {
   PROFILE_RATE_LIMIT,
   PROFILE_RATE_WINDOW_MS,
   PROFILE_MAX_CONCURRENT,
+  resolveModel,
 } from "@/lib/config";
 import { rateLimit, acquireSlot, releaseSlot, clientIp } from "@/lib/ratelimit";
 import {
@@ -72,14 +73,20 @@ export async function POST(req: Request) {
     return Response.json({ error: body.error }, { status: body.status });
   }
 
-  const { company, detail } = (body.data ?? {}) as {
+  const { company, detail, model } = (body.data ?? {}) as {
     company?: string;
     detail?: string;
+    model?: string;
   };
 
   if (!company?.trim()) {
     return Response.json({ error: "Please provide a company." }, { status: 400 });
   }
+
+  // The requested model is an untrusted tier keyword ("opus" / "sonnet");
+  // resolveModel maps it to a known model and falls back to the default for
+  // anything unrecognized, so a bad value can never reach the API as a raw ID.
+  const modelTier = resolveModel(model).tier;
 
   const client = new Anthropic();
   const trimmedCompany = sanitizeInput(company, MAX_COMPANY_LEN);
@@ -135,7 +142,7 @@ export async function POST(req: Request) {
 
       try {
         const profile = await Promise.race([
-          researchCompany(client, trimmedCompany, trimmedDetail, ac.signal),
+          researchCompany(client, trimmedCompany, trimmedDetail, ac.signal, modelTier),
           timeoutPromise,
         ]);
         send({ type: "result", profile });
