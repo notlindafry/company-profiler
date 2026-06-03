@@ -72,8 +72,8 @@ the browser.
 > **Note on timing:** research can take 20–60 seconds. The server route is set to
 > allow up to 300 seconds (`maxDuration` in `app/api/profile/route.ts`). Vercel's
 > free **Hobby** plan caps server functions at 60 seconds; if research is cut off,
-> upgrade the plan or lower how many searches Claude runs (`MAX_WEB_SEARCHES` in
-> `lib/config.ts`).
+> upgrade the plan or lower how many searches Claude runs (`maxWebSearches` on each
+> tier in `MODEL_OPTIONS`, `lib/config.ts`), or pick the lighter Sonnet tier.
 
 ---
 
@@ -102,8 +102,9 @@ the browser.
   and field labels) in `lib/schema.ts` and the matching per-lens guidance in
   `fitAndAngleGuidance` in `lib/prompt.ts`. Every profile renders one Fit & Angle
   section per lens, in the order they appear in `INTENTS`.
-- **Make research faster/cheaper or more thorough:** change `MAX_WEB_SEARCHES` in
-  `lib/config.ts`.
+- **Make research faster/cheaper or more thorough:** each model tier in
+  `MODEL_OPTIONS` (`lib/config.ts`) carries its own `effort` and `maxWebSearches`
+  — tune those to trade cost for depth, or add a new tier.
 
 ## A note on trust
 

@@ -11,11 +11,17 @@
 // ---------------------------------------------------------------------------
 export type ModelTier = "opus" | "sonnet";
 
+// Reasoning/output effort passed to each model call.
+export type EffortLevel = "low" | "medium" | "high";
+
 export interface ModelOption {
   tier: ModelTier;
   id: string; // exact Anthropic model ID sent to the API
   label: string; // shown in the selector
   blurb: string; // short cost / capability hint
+  // Per-tier cost/depth knobs, so the selector dials more than just the model:
+  effort: EffortLevel; // reasoning effort per call
+  maxWebSearches: number; // web_search max_uses per search pass (~2 passes total)
 }
 
 // Order = display order in the UI.
@@ -24,13 +30,17 @@ export const MODEL_OPTIONS: ModelOption[] = [
     tier: "sonnet",
     id: "claude-sonnet-4-6",
     label: "Sonnet 4.6",
-    blurb: "Faster and cheaper — solid for most lookups",
+    blurb: "Faster and cheaper — lighter research, solid for most lookups",
+    effort: "medium",
+    maxWebSearches: 5,
   },
   {
     tier: "opus",
     id: "claude-opus-4-8",
     label: "Opus 4.8",
-    blurb: "Most capable, most expensive — deepest analysis",
+    blurb: "Most capable, most expensive — deeper reasoning and more searches",
+    effort: "high",
+    maxWebSearches: 9,
   },
 ];
 
@@ -46,10 +56,10 @@ export function resolveModel(tier: unknown): ModelOption {
   );
 }
 
-// How many web searches Claude may run per search pass. The search phase is
-// bounded to 2 passes (see lib/research.ts), so total searches are capped around
-// 2x this — keeping heavy subjects within the time limit. Raise/lower to taste.
-export const MAX_WEB_SEARCHES = 6;
+// How many web searches Claude may run per search pass is set per model tier
+// (see MODEL_OPTIONS.maxWebSearches above). The search phase is bounded to 2
+// passes (see lib/research.ts), so total searches are capped around 2x that —
+// keeping heavy subjects within the time limit.
 
 // Limit research to materials from roughly the last N years. Foundational/
 // historical facts (company founding & IPO date, education, career history) are

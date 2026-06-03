@@ -1,7 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import {
   DEFAULT_MODEL_TIER,
-  MAX_WEB_SEARCHES,
   RESULT_CACHE_TTL_MS,
   resolveModel,
 } from "./config";
@@ -41,9 +40,12 @@ export async function researchCompany(
   signal?: AbortSignal,
   modelTier?: string
 ): Promise<CompanyProfile> {
-  // Resolve the requested tier to a concrete, validated model ID (falls back to
-  // the default for anything unrecognized).
-  const model = resolveModel(modelTier ?? DEFAULT_MODEL_TIER).id;
+  // Resolve the requested tier to a concrete, validated model option (falls back
+  // to the default for anything unrecognized). The option carries the model ID
+  // plus the cost/depth knobs (effort, search budget) for this run.
+  const { id: model, effort, maxWebSearches } = resolveModel(
+    modelTier ?? DEFAULT_MODEL_TIER
+  );
 
   // Reuse a recent identical result instead of re-running the expensive pipeline.
   const key = cacheKey(company, detail, model);
@@ -62,19 +64,19 @@ export async function researchCompany(
 
   // Bounded search phase (2 passes). We use the direct web_search_20250305 tool
   // (no code-execution "dynamic filtering"), which is much faster per search;
-  // that speed lets us afford medium effort + more searches for fuller coverage.
+  // effort and the per-pass search budget come from the selected model tier.
   for (let attempt = 0; attempt < 2; attempt++) {
     const stream = client.messages.stream(
       {
         model,
         max_tokens: 16000,
-        output_config: { effort: "medium" },
+        output_config: { effort },
         system: SYSTEM_PROMPT,
         tools: [
           {
             type: "web_search_20250305",
             name: "web_search",
-            max_uses: MAX_WEB_SEARCHES,
+            max_uses: maxWebSearches,
           },
         ],
         messages,
@@ -104,7 +106,7 @@ export async function researchCompany(
         {
           model,
           max_tokens: 16000,
-          output_config: { effort: "medium" },
+          output_config: { effort },
           system: SYSTEM_PROMPT,
           messages,
         },
