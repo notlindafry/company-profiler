@@ -44,3 +44,11 @@ export function isAuthorized(token: string | undefined): boolean {
   if (!isGateEnabled()) return true;
   return tokenIsValid(token);
 }
+
+// Fail-closed guard: in production we refuse to serve an OPEN (no-password) app,
+// since that silently exposes the owner's billable API key to the public. Local
+// development stays open for convenience. When true, the API blocks research and
+// the page shows a setup notice instead of running unprotected.
+export function isUnprotectedInProd(): boolean {
+  return process.env.NODE_ENV === "production" && !isGateEnabled();
+}

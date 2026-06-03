@@ -81,13 +81,20 @@ the browser.
 
 - **Search engines:** the app tells search engines not to index it (via a
   `noindex` setting), so it should not show up in Google results.
-- **Password gate:** the app is public by default — anyone with the link can use
-  it, and their searches bill *your* Anthropic key. To require a password, add an
-  environment variable named `APP_PASSWORD` (in `.env.local` locally, and in
-  Vercel → Settings → Environment Variables) and redeploy. Once set, visitors
-  must enter that password before they can run any search. Leave it unset to keep
-  the app open. The password is checked on the server, so it also blocks anyone
-  trying to call the API directly.
+- **Password gate:** to require a password, add an environment variable named
+  `APP_PASSWORD` (in `.env.local` locally, and in Vercel → Settings → Environment
+  Variables, for the **Production** environment) and redeploy. Once set, visitors
+  must enter that password before they can run any search. The password is checked
+  on the server, so it also blocks anyone trying to call the API directly.
+- **Fails closed in production:** a deployed (production) build with no
+  `APP_PASSWORD` set is treated as a misconfiguration — the page shows a "setup
+  required" notice and the research API returns `503` instead of silently serving
+  an open app on your API key. Set `APP_PASSWORD` to enable it. (Local
+  development is intentionally left open so you don't need a password to run it on
+  your machine.)
+- **Verify it's on:** open the deployed URL in a private/incognito window — you
+  should see the password screen. If you set `APP_PASSWORD` only for Preview (not
+  Production), or to an empty value, the gate won't be active.
 
 ## Changing things later
 

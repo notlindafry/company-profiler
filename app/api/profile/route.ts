@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { cookies } from "next/headers";
 import { researchCompany } from "@/lib/research";
-import { COOKIE_NAME, isAuthorized } from "@/lib/auth";
+import { COOKIE_NAME, isAuthorized, isUnprotectedInProd } from "@/lib/auth";
 import {
   PROFILE_RATE_LIMIT,
   PROFILE_RATE_WINDOW_MS,
@@ -50,6 +50,19 @@ export async function POST(req: Request) {
     return Response.json(
       { error: "Server is missing ANTHROPIC_API_KEY. See the README setup steps." },
       { status: 500 }
+    );
+  }
+
+  // Fail closed: never serve billable research from a production app that has no
+  // password gate. This prevents silently exposing the owner's API key publicly.
+  if (isUnprotectedInProd()) {
+    console.warn(
+      "Refusing research: running in production with no APP_PASSWORD set. " +
+        "Set APP_PASSWORD in the environment to enable the app."
+    );
+    return Response.json(
+      { error: "This app isn't configured for public access. Set APP_PASSWORD to enable it." },
+      { status: 503 }
     );
   }
 
