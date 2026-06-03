@@ -65,7 +65,7 @@ function TemperatureBadge({
   return (
     <span className="inline-flex items-center gap-1.5 text-xs">
       <span
-        className={`rounded-full px-2 py-0.5 font-semibold uppercase tracking-wide ${meta.className}`}
+        className={`inline-block min-w-[8rem] rounded-full px-2 py-0.5 text-center font-semibold uppercase tracking-wide ${meta.className}`}
       >
         {meta.label}
       </span>
