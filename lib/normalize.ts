@@ -9,6 +9,7 @@ import type {
   CompanySnapshot,
   CompanyCulture,
   CompanyFitAndAngle,
+  FitAndAngleByIntent,
   ControversyType,
 } from "./schema";
 
@@ -87,6 +88,17 @@ function fitAndAngle(value: unknown): CompanyFitAndAngle {
     watchOuts: strList(o.watchOuts),
     talkingPoints: strList(o.talkingPoints),
     questionsToAsk: strList(o.questionsToAsk),
+  };
+}
+
+// One assessment per lens. Each key is normalized independently so a missing or
+// malformed lens still yields a safe (empty) section rather than crashing the UI.
+function fitAndAngles(value: unknown): FitAndAngleByIntent {
+  const o = rec(value);
+  return {
+    w2: fitAndAngle(o.w2),
+    advisory: fitAndAngle(o.advisory),
+    network: fitAndAngle(o.network),
   };
 }
 
@@ -170,7 +182,7 @@ export function normalizeProfile(raw: unknown): CompanyProfile {
       })
       .filter((c) => c.name !== NF),
     culture: culture(o.culture),
-    fitAndAngle: fitAndAngle(o.fitAndAngle),
+    fitAndAngle: fitAndAngles(o.fitAndAngle),
     unknowns: strList(o.unknowns),
   };
 }

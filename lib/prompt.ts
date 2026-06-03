@@ -1,12 +1,11 @@
 import { ABOUT_ME, RECENCY_YEARS } from "./config";
-import type { ProfileIntent } from "./schema";
 
 export const SYSTEM_PROMPT = `
 You are a research assistant. You produce factual, sourced profiles of companies
-for someone evaluating each company for a specific purpose — which may be a
-potential full-time role, an advisory engagement, or a network relationship.
-The user states that purpose; tailor ONLY the closing "fit & angle" assessment to
-it, and keep every factual section objective regardless of the purpose.
+for someone evaluating each company through three lenses at once — a potential
+full-time role, an advisory engagement, and a network relationship. Tailor ONLY
+the closing "fit & angle" assessments to those lenses (one per lens), and keep
+every factual section objective regardless.
 
 Hard rules:
 - The user message states TODAY'S DATE. Treat it as the authoritative present —
@@ -113,10 +112,24 @@ and empty arrays [] for sections with no findings):
     "source": string
   },
   "fitAndAngle": {
-    "whyItCouldFitYou": [string],
-    "watchOuts": [string],
-    "talkingPoints": [string],
-    "questionsToAsk": [string]
+    "w2": {
+      "whyItCouldFitYou": [string],
+      "watchOuts": [string],
+      "talkingPoints": [string],
+      "questionsToAsk": [string]
+    },
+    "advisory": {
+      "whyItCouldFitYou": [string],
+      "watchOuts": [string],
+      "talkingPoints": [string],
+      "questionsToAsk": [string]
+    },
+    "network": {
+      "whyItCouldFitYou": [string],
+      "watchOuts": [string],
+      "talkingPoints": [string],
+      "questionsToAsk": [string]
+    }
   },
   "unknowns": [string]
 }
@@ -170,24 +183,37 @@ Notes on specific fields:
 `.trim();
 }
 
-// The "fitAndAngle" section is the only part tailored to the user, and it is
-// reframed entirely by the chosen intent. This keeps the app from defaulting to
-// a job-candidate framing the user has explicitly ruled out.
-function fitAndAngleGuidance(intent: ProfileIntent): string {
-  switch (intent) {
-    case "advisory":
-      return `
-Intent: I am evaluating this company as a potential ADVISORY CLIENT for Second
-Line Labs, my solo advisory practice (fractional / advisory GRC & Tech Risk). I am
-NOT looking to be hired full-time here. The question is whether they have a need my
-practice could serve and whether they would buy advisory help. Fill "fitAndAngle":
-- whyItCouldFitYou: 3-5 points on why they could be a strong advisory client —
-  buying signals that map to what Second Line Labs offers: scaling fast, recent
-  funding, entering or already in a regulated space, IPO / charter / audit pressure,
-  a recent breach or incident, new or vacant senior risk/security leadership, a thin
-  or nonexistent second line, or leadership churn in risk. Tie each to a concrete way
-  my practice (standing up or maturing GRC, FAIR-based quantitative risk, board /
-  regulator reporting, AI-native risk operating models) would help.
+// The "fitAndAngle" object is the only part tailored to the user. It holds THREE
+// independent assessments — one per lens (w2, advisory, network) — so a single
+// profile serves every angle without the user choosing one up front.
+function fitAndAngleGuidance(): string {
+  return `
+Fill "fitAndAngle" with THREE independent assessments — one under each of the keys
+"w2", "advisory", and "network". Each is its own object with the same four arrays
+(whyItCouldFitYou, watchOuts, talkingPoints, questionsToAsk), framed entirely by that
+lens as described below. The factual sections above stay objective and identical
+regardless of lens.
+
+"w2" — I am evaluating this company as a potential FULL-TIME (W2) role for myself:
+- whyItCouldFitYou: 3-5 points on whether this company matches what I would take a
+  full-time seat for (size, sector, regulatory posture, whether it likely needs a real
+  second-line GRC / Tech-Risk mandate with a TEAM to lead — not a solo IC seat).
+- watchOuts: 2-4 honest flags I should weigh (recent layoffs, instability, legal /
+  regulatory overhang, signs the role would be a solo IC seat or lack a real mandate).
+- talkingPoints: 3-5 specific things I could raise in an interview.
+- questionsToAsk: 3-5 smart, specific questions about the company or the role.
+
+"advisory" — I am evaluating this company as a potential ADVISORY CLIENT for Second
+Line Labs, my solo advisory practice (fractional / advisory GRC & Tech Risk). I am NOT
+looking to be hired full-time here under this lens. The question is whether they have a
+need my practice could serve and whether they would buy advisory help:
+- whyItCouldFitYou: 3-5 points on why they could be a strong advisory client — buying
+  signals that map to what Second Line Labs offers: scaling fast, recent funding,
+  entering or already in a regulated space, IPO / charter / audit pressure, a recent
+  breach or incident, new or vacant senior risk/security leadership, a thin or
+  nonexistent second line, or leadership churn in risk. Tie each to a concrete way my
+  practice (standing up or maturing GRC, FAIR-based quantitative risk, board / regulator
+  reporting, AI-native risk operating models) would help.
 - watchOuts: 2-4 honest flags that would make them a poor or low-probability advisory
   client — an already-mature in-house risk function unlikely to bring in outside help,
   signs of no budget or financial distress, too small to need a real second line, or
@@ -197,47 +223,30 @@ practice could serve and whether they would buy advisory help. Fill "fitAndAngle
   conversation with.
 - questionsToAsk: 3-5 scoping / qualifying questions to size the engagement and confirm
   the need (who owns risk today, what triggered the need, budget and timeline, board or
-  regulator pressure, in-house vs. fractional preference).`.trim();
-    case "network":
-      return `
-Intent: I am evaluating this company as a NETWORK relationship — whether it is
+  regulator pressure, in-house vs. fractional preference).
+
+"network" — I am evaluating this company as a NETWORK relationship — whether it is
 worth my time and energy to build a connection here (warm intros, an advisor seat,
-ongoing dialogue with leadership, mutual support). I am NOT evaluating it as a
-job for myself, and I am NOT making a financial investment decision — do not
+ongoing dialogue with leadership, mutual support). I am NOT evaluating it as a job for
+myself under this lens, and I am NOT making a financial investment decision — do not
 discuss capital, equity, returns, valuation, runway as an investment factor, or
-diligence-for-investing. Fill "fitAndAngle":
-- whyItCouldFitYou: 3-5 points on why this relationship could be worth building —
-  who I would meet, alignment with my GRC / Tech Risk world, what we might learn
-  from each other, and any natural edge I have for being useful to them (e.g. an
-  advisor seat leveraging my background in a regulated space).
-- watchOuts: 2-4 honest flags that would make this a poor use of relationship
-  energy — values or reputation concerns, leadership churn that makes connections
-  short-lived, irrelevance to my world, or signs they would not reciprocate.
-- talkingPoints: 3-5 angles to build the relationship — who to know, warm-intro
-  paths, and concrete value I could offer (e.g. an advisory seat on risk /
-  compliance, intros from my network, a perspective on a current challenge).
-- questionsToAsk: 3-5 questions to surface where the relationship could go — what
-  they are wrestling with, who in their world I should know, how they prefer to
-  collaborate with outside operators.`.trim();
-    case "w2":
-      return `
-Intent: I am evaluating this company as a potential FULL-TIME (W2) role for myself.
-Fill "fitAndAngle":
-- whyItCouldFitYou: 3-5 points on whether this company matches what I would take a
-  full-time seat for (size, sector, regulatory posture, whether it likely needs a real
-  second-line GRC / Tech-Risk mandate with a TEAM to lead — not a solo IC seat).
-- watchOuts: 2-4 honest flags I should weigh (recent layoffs, instability, legal /
-  regulatory overhang, signs the role would be a solo IC seat or lack a real mandate).
-- talkingPoints: 3-5 specific things I could raise in an interview.
-- questionsToAsk: 3-5 smart, specific questions about the company or the role.`.trim();
-  }
+diligence-for-investing:
+- whyItCouldFitYou: 3-5 points on why this relationship could be worth building — who I
+  would meet, alignment with my GRC / Tech Risk world, what we might learn from each
+  other, and any natural edge I have for being useful to them (e.g. an advisor seat
+  leveraging my background in a regulated space).
+- watchOuts: 2-4 honest flags that would make this a poor use of relationship energy —
+  values or reputation concerns, leadership churn that makes connections short-lived,
+  irrelevance to my world, or signs they would not reciprocate.
+- talkingPoints: 3-5 angles to build the relationship — who to know, warm-intro paths,
+  and concrete value I could offer (e.g. an advisory seat on risk / compliance, intros
+  from my network, a perspective on a current challenge).
+- questionsToAsk: 3-5 questions to surface where the relationship could go — what they
+  are wrestling with, who in their world I should know, how they prefer to collaborate
+  with outside operators.`.trim();
 }
 
-export function buildCompanyPrompt(
-  company: string,
-  detail?: string,
-  intent: ProfileIntent = "advisory"
-): string {
+export function buildCompanyPrompt(company: string, detail?: string): string {
   const trimmed = detail?.trim();
   const disambiguation = trimmed
     ? `
@@ -259,11 +268,11 @@ ${recencyGuidance(
 
 ${companySchemaDescription()}
 
-The factual sections above are objective and do NOT change based on my intent.
-Only "fitAndAngle" is tailored to me, and it is framed entirely by my intent below.
-Do NOT steer toward a full-time role unless the intent is explicitly W2.
+The factual sections above are objective and do NOT change based on lens.
+Only "fitAndAngle" is tailored to me, and it provides three independent assessments —
+one per lens — as described below. Do NOT steer the factual sections toward any lens.
 
-${fitAndAngleGuidance(intent)}
+${fitAndAngleGuidance()}
 
 About me (use ONLY for the fitAndAngle section):
 ${ABOUT_ME}

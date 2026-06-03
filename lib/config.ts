@@ -34,14 +34,14 @@ export const LOGIN_RATE_LIMIT = 8;
 export const LOGIN_RATE_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
 // How long to reuse a previously researched profile for an identical request
-// (same company + detail + intent) before re-running the pipeline.
+// (same company + detail) before re-running the pipeline.
 export const RESULT_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 // ---------------------------------------------------------------------------
-// "About me" — used ONLY to tailor the final "Fit & Angle" section of each
-// profile. Edit this to match your own background. The Fit & Angle section is
-// reframed by the selected intent (W2 / advisory / network); this background
-// feeds all three lenses, so keep both the practice and the W2 criteria here.
+// "About me" — used ONLY to tailor the final "Fit & Angle" sections of each
+// profile. Edit this to match your own background. Every profile produces all
+// three Fit & Angle lenses (W2 / advisory / network); this background feeds all
+// three, so keep both the practice and the W2 criteria here.
 // ---------------------------------------------------------------------------
 export const ABOUT_ME = `
 - Level / domain: Director / Sr. Director / VP — GRC & Technology Risk. 12+ years.

@@ -1,7 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { cookies } from "next/headers";
 import { researchCompany } from "@/lib/research";
-import { DEFAULT_INTENT, isProfileIntent } from "@/lib/schema";
 import { COOKIE_NAME, isAuthorized } from "@/lib/auth";
 import {
   PROFILE_RATE_LIMIT,
@@ -73,10 +72,9 @@ export async function POST(req: Request) {
     return Response.json({ error: body.error }, { status: body.status });
   }
 
-  const { company, detail, intent } = (body.data ?? {}) as {
+  const { company, detail } = (body.data ?? {}) as {
     company?: string;
     detail?: string;
-    intent?: string;
   };
 
   if (!company?.trim()) {
@@ -86,7 +84,6 @@ export async function POST(req: Request) {
   const client = new Anthropic();
   const trimmedCompany = sanitizeInput(company, MAX_COMPANY_LEN);
   const trimmedDetail = detail ? sanitizeInput(detail, MAX_DETAIL_LEN) || undefined : undefined;
-  const resolvedIntent = isProfileIntent(intent) ? intent : DEFAULT_INTENT;
 
   if (!trimmedCompany) {
     return Response.json({ error: "Please provide a company." }, { status: 400 });
@@ -138,7 +135,7 @@ export async function POST(req: Request) {
 
       try {
         const profile = await Promise.race([
-          researchCompany(client, trimmedCompany, trimmedDetail, resolvedIntent, ac.signal),
+          researchCompany(client, trimmedCompany, trimmedDetail, ac.signal),
           timeoutPromise,
         ]);
         send({ type: "result", profile });

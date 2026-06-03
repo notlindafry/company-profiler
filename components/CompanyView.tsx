@@ -1,5 +1,5 @@
-import type { CompanyProfile, ControversyType, ProfileIntent } from "@/lib/schema";
-import { DEFAULT_INTENT, INTENT_META } from "@/lib/schema";
+import type { CompanyProfile, ControversyType } from "@/lib/schema";
+import { INTENTS } from "@/lib/schema";
 
 function SourceLink({ url }: { url?: string }) {
   if (!url || url === "Not found") return null;
@@ -59,13 +59,10 @@ function SnapshotRow({ label, value }: { label: string; value?: string }) {
 
 export default function CompanyView({
   profile,
-  intent = DEFAULT_INTENT,
 }: {
   profile: CompanyProfile;
-  intent?: ProfileIntent;
 }) {
   const s = profile.snapshot;
-  const fitMeta = INTENT_META[intent];
   return (
     <article className="print-container mx-auto max-w-3xl rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
       {/* Header */}
@@ -307,27 +304,32 @@ export default function CompanyView({
         )}
       </Section>
 
-      {/* Fit & Angle */}
-      <Section title={fitMeta.sectionTitle}>
-        <div className="space-y-4 text-sm">
-          <FitList
-            label={fitMeta.fieldLabels.whyItCouldFitYou}
-            items={profile.fitAndAngle?.whyItCouldFitYou}
-          />
-          <FitList
-            label={fitMeta.fieldLabels.watchOuts}
-            items={profile.fitAndAngle?.watchOuts}
-          />
-          <FitList
-            label={fitMeta.fieldLabels.talkingPoints}
-            items={profile.fitAndAngle?.talkingPoints}
-          />
-          <FitList
-            label={fitMeta.fieldLabels.questionsToAsk}
-            items={profile.fitAndAngle?.questionsToAsk}
-          />
-        </div>
-      </Section>
+      {/* Fit & Angle — one section per lens (W2 role, advisory client, network) */}
+      {INTENTS.map((meta) => {
+        const fit = profile.fitAndAngle?.[meta.value];
+        return (
+          <Section key={meta.value} title={meta.sectionTitle}>
+            <div className="space-y-4 text-sm">
+              <FitList
+                label={meta.fieldLabels.whyItCouldFitYou}
+                items={fit?.whyItCouldFitYou}
+              />
+              <FitList
+                label={meta.fieldLabels.watchOuts}
+                items={fit?.watchOuts}
+              />
+              <FitList
+                label={meta.fieldLabels.talkingPoints}
+                items={fit?.talkingPoints}
+              />
+              <FitList
+                label={meta.fieldLabels.questionsToAsk}
+                items={fit?.questionsToAsk}
+              />
+            </div>
+          </Section>
+        );
+      })}
 
       {/* Unknowns */}
       <Section title="Unknowns / low-confidence">

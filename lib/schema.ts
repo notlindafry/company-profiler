@@ -86,8 +86,9 @@ export interface CompanyFitAndAngle {
   questionsToAsk: string[];
 }
 
-// The lens the user is evaluating the company through. This reshapes only the
-// closing "Fit & Angle" section — the factual sections stay objective.
+// The three lenses every profile is evaluated through. These reshape only the
+// closing "Fit & Angle" sections — the factual sections stay objective. Every
+// profile now includes all three; there is no selection to make.
 //   w2       — a potential full-time role for me
 //   advisory — a potential advisory client for Second Line Labs (my practice)
 //   network  — a relationship bet (time, advisor-investor seat, warm intros)
@@ -95,9 +96,7 @@ export type ProfileIntent = "w2" | "advisory" | "network";
 
 export interface IntentMeta {
   value: ProfileIntent;
-  formLabel: string; // short label on the form control
-  formHint: string; // one line under the option
-  sectionTitle: string; // heading for the Fit & Angle section in the view
+  sectionTitle: string; // heading for this lens's Fit & Angle section in the view
   fieldLabels: {
     whyItCouldFitYou: string;
     watchOuts: string;
@@ -106,12 +105,10 @@ export interface IntentMeta {
   };
 }
 
-// Ordered left-to-right: full-time W2 role, advisory client, network.
+// Rendered top-to-bottom in this order: full-time W2 role, advisory client, network.
 export const INTENTS: IntentMeta[] = [
   {
     value: "w2",
-    formLabel: "Full-time (W2) role",
-    formHint: "A potential full-time seat for me",
     sectionTitle: "Fit & Angle — as a full-time (W2) role",
     fieldLabels: {
       whyItCouldFitYou: "Why this role could fit you",
@@ -122,8 +119,6 @@ export const INTENTS: IntentMeta[] = [
   },
   {
     value: "advisory",
-    formLabel: "Advisory client",
-    formHint: "A potential Second Line Labs engagement",
     sectionTitle: "Fit & Angle — as a Second Line Labs advisory client",
     fieldLabels: {
       whyItCouldFitYou: "Why they could be a fit for Second Line Labs",
@@ -134,8 +129,6 @@ export const INTENTS: IntentMeta[] = [
   },
   {
     value: "network",
-    formLabel: "Network",
-    formHint: "A relationship worth building (intros, advisor seat, time)",
     sectionTitle: "Fit & Angle — as a network relationship",
     fieldLabels: {
       whyItCouldFitYou: "Why this relationship could be worth building",
@@ -146,17 +139,8 @@ export const INTENTS: IntentMeta[] = [
   },
 ];
 
-export const INTENT_META: Record<ProfileIntent, IntentMeta> = Object.fromEntries(
-  INTENTS.map((i) => [i.value, i])
-) as Record<ProfileIntent, IntentMeta>;
-
-// Default to the advisory lens. The user has ruled out a full-time seat, so the
-// app should not silently default to candidate framing.
-export const DEFAULT_INTENT: ProfileIntent = "advisory";
-
-export function isProfileIntent(value: unknown): value is ProfileIntent {
-  return value === "w2" || value === "advisory" || value === "network";
-}
+// One Fit & Angle assessment per lens, keyed by intent.
+export type FitAndAngleByIntent = Record<ProfileIntent, CompanyFitAndAngle>;
 
 export interface CompanyProfile {
   name: string;
@@ -172,6 +156,6 @@ export interface CompanyProfile {
   regulatoryFilings: RegulatoryFiling[];
   majorCustomers: MajorCustomer[];
   culture: CompanyCulture;
-  fitAndAngle: CompanyFitAndAngle;
+  fitAndAngle: FitAndAngleByIntent;
   unknowns: string[];
 }
