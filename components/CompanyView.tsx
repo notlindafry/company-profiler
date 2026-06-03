@@ -1,6 +1,7 @@
 import type {
   CompanyProfile,
   CompanyFitAndAngle,
+  FitTemperature,
   ControversyType,
 } from "@/lib/schema";
 import { INTENTS } from "@/lib/schema";
@@ -21,18 +22,57 @@ function SourceLink({ url }: { url?: string }) {
 
 function Section({
   title,
+  badge,
   children,
 }: {
   title: string;
+  badge?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <section className="border-t border-slate-200 py-5">
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
-        {title}
-      </h2>
+      <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          {title}
+        </h2>
+        {badge}
+      </div>
       {children}
     </section>
+  );
+}
+
+// Traffic-light verdict on how strong a given lens's fit is. Color and label are
+// fixed; the model's one-line rationale (note) is shown inline when present.
+const TEMPERATURE_META: Record<
+  FitTemperature,
+  { label: string; className: string }
+> = {
+  green: { label: "Good fit", className: "bg-green-100 text-green-700" },
+  orange: { label: "Mixed / unclear", className: "bg-amber-100 text-amber-700" },
+  red: { label: "Poor fit", className: "bg-red-100 text-red-700" },
+};
+
+function TemperatureBadge({
+  temperature,
+  note,
+}: {
+  temperature?: FitTemperature;
+  note?: string;
+}) {
+  if (!temperature) return null;
+  const meta = TEMPERATURE_META[temperature];
+  return (
+    <span className="inline-flex items-center gap-1.5 text-xs">
+      <span
+        className={`rounded-full px-2 py-0.5 font-semibold uppercase tracking-wide ${meta.className}`}
+      >
+        {meta.label}
+      </span>
+      {has(note) ? (
+        <span className="font-normal normal-case text-slate-500">{note}</span>
+      ) : null}
+    </span>
   );
 }
 
@@ -312,7 +352,16 @@ export default function CompanyView({
       {INTENTS.map((meta) => {
         const fit = profile.fitAndAngle?.[meta.value];
         return (
-          <Section key={meta.value} title={meta.sectionTitle}>
+          <Section
+            key={meta.value}
+            title={meta.sectionTitle}
+            badge={
+              <TemperatureBadge
+                temperature={fit?.temperature}
+                note={fit?.temperatureNote}
+              />
+            }
+          >
             <div className="space-y-4 text-sm">
               <FitList
                 label={meta.fieldLabels.whyItCouldFitYou}

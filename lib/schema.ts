@@ -89,7 +89,18 @@ export interface JobPosting {
   note?: string; // one line on why it could be a fit
 }
 
+// A traffic-light read on how strong this lens's fit is, given the analysis and
+// my needs:
+//   green  — good fit for this angle
+//   orange — mixed / unclear
+//   red    — poor fit for this angle
+export type FitTemperature = "green" | "orange" | "red";
+
 export interface CompanyFitAndAngle {
+  // Overall strength of THIS lens's relationship, plus a one-line rationale.
+  // Optional so a malformed/missing rating degrades gracefully in the UI.
+  temperature?: FitTemperature;
+  temperatureNote?: string;
   whyItCouldFitYou: string[];
   watchOuts: string[];
   talkingPoints: string[];

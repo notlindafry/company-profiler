@@ -113,6 +113,8 @@ and empty arrays [] for sections with no findings):
   },
   "fitAndAngle": {
     "w2": {
+      "temperature": "green" | "orange" | "red",
+      "temperatureNote": string,
       "whyItCouldFitYou": [string],
       "watchOuts": [string],
       "talkingPoints": [string],
@@ -123,12 +125,16 @@ and empty arrays [] for sections with no findings):
       "careersUrl": string
     },
     "advisory": {
+      "temperature": "green" | "orange" | "red",
+      "temperatureNote": string,
       "whyItCouldFitYou": [string],
       "watchOuts": [string],
       "talkingPoints": [string],
       "questionsToAsk": [string]
     },
     "network": {
+      "temperature": "green" | "orange" | "red",
+      "temperatureNote": string,
       "whyItCouldFitYou": [string],
       "watchOuts": [string],
       "talkingPoints": [string],
@@ -197,6 +203,18 @@ Fill "fitAndAngle" with THREE independent assessments — one under each of the 
 (whyItCouldFitYou, watchOuts, talkingPoints, questionsToAsk), framed entirely by that
 lens as described below. The factual sections above stay objective and identical
 regardless of lens.
+
+For EACH lens, also give a "temperature" — a traffic-light verdict on how strong the
+considered relationship is for THAT specific angle, weighing your analysis above against
+my needs and criteria in "About me":
+- "green"  = good fit for this angle — strong, clear match worth pursuing.
+- "orange" = mixed or unclear — some fit but real caveats, or not enough signal to call.
+- "red"    = poor fit for this angle — weak match, better passed on for this lens.
+Judge each lens ON ITS OWN: the same company can be (say) red as a W2 role but green as a
+network relationship. Base the rating on the evidence you actually gathered, not optimism.
+Also give "temperatureNote": ONE short sentence (roughly 10-20 words) saying why you landed
+on that color for this lens. If you genuinely cannot judge a lens, use "orange" with a note
+explaining what is missing.
 
 "w2" — I am evaluating this company as a potential FULL-TIME (W2) role for myself:
 - whyItCouldFitYou: 3-5 points on whether this company matches what I would take a

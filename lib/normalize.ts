@@ -10,10 +10,21 @@ import type {
   CompanyCulture,
   CompanyFitAndAngle,
   FitAndAngleByIntent,
+  FitTemperature,
   ControversyType,
 } from "./schema";
 
 const NF = "Not found";
+
+const FIT_TEMPERATURES: FitTemperature[] = ["green", "orange", "red"];
+
+// Only accept one of the three known colors; anything else (missing, typo, an
+// unexpected type) becomes undefined so the UI simply omits the badge.
+function temperature(value: unknown): FitTemperature | undefined {
+  return FIT_TEMPERATURES.includes(value as FitTemperature)
+    ? (value as FitTemperature)
+    : undefined;
+}
 
 function rec(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -84,6 +95,8 @@ function culture(value: unknown): CompanyCulture {
 function fitAndAngle(value: unknown): CompanyFitAndAngle {
   const o = rec(value);
   return {
+    temperature: temperature(o.temperature),
+    temperatureNote: optStr(o.temperatureNote),
     whyItCouldFitYou: strList(o.whyItCouldFitYou),
     watchOuts: strList(o.watchOuts),
     talkingPoints: strList(o.talkingPoints),
