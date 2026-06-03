@@ -376,77 +376,50 @@ function CareersLink({ url, label }: { url?: string; label: string }) {
   );
 }
 
-// W2-only hiring block: roles posted in the last 30 days (with a careers-page
-// fallback when none match), plus signals that a relevant role was recently
-// filled or closed.
+// W2-only hiring block: roles posted in the last 30 days, with a careers-page
+// fallback when none match.
 function W2Hiring({ fit }: { fit?: CompanyFitAndAngle }) {
   const postings = fit?.jobPostings ?? [];
-  const signals = fit?.filledRoleSignals ?? [];
   const careersUrl = fit?.careersUrl;
   return (
-    <>
-      <div>
-        <h3 className="font-semibold text-slate-800">
-          Open roles posted in the last 30 days
-        </h3>
-        {postings.length ? (
-          <>
-            <ul className="mt-1 space-y-2 text-slate-700">
-              {postings.map((job, i) => (
-                <li key={i}>
-                  <span className="font-medium text-slate-900">{job.title}</span>
-                  {has(job.location) ? (
-                    <span className="text-slate-600"> · {job.location}</span>
-                  ) : null}
-                  {has(job.postedDate) ? (
-                    <span className="text-slate-500"> · {job.postedDate}</span>
-                  ) : null}
-                  <SourceLink url={job.url} />
-                  {has(job.note) ? (
-                    <span className="block text-slate-600">{job.note}</span>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-            {has(careersUrl) ? (
-              <p className="mt-2">
-                <CareersLink url={careersUrl} label="See all open roles →" />
-              </p>
-            ) : null}
-          </>
-        ) : (
-          <p className="mt-1 text-slate-600">
-            No relevant roles posted in the last 30 days.{" "}
-            {has(careersUrl) ? (
-              <CareersLink url={careersUrl} label="Browse all open roles →" />
-            ) : null}
-          </p>
-        )}
-      </div>
-
-      {signals.length ? (
-        <div>
-          <h3 className="font-semibold text-slate-800">
-            Recently filled / closed roles
-          </h3>
-          <p className="mt-0.5 text-xs text-slate-400">
-            A relevant seat that was just filled likely means they don&apos;t need
-            someone like me right now.
-          </p>
+    <div>
+      <h3 className="font-semibold text-slate-800">
+        Open roles posted in the last 30 days
+      </h3>
+      {postings.length ? (
+        <>
           <ul className="mt-1 space-y-2 text-slate-700">
-            {signals.map((sig, i) => (
+            {postings.map((job, i) => (
               <li key={i}>
-                <span>{sig.summary}</span>
-                {has(sig.date) ? (
-                  <span className="text-slate-500"> · {sig.date}</span>
+                <span className="font-medium text-slate-900">{job.title}</span>
+                {has(job.location) ? (
+                  <span className="text-slate-600"> · {job.location}</span>
                 ) : null}
-                <SourceLink url={sig.source} />
+                {has(job.postedDate) ? (
+                  <span className="text-slate-500"> · {job.postedDate}</span>
+                ) : null}
+                <SourceLink url={job.url} />
+                {has(job.note) ? (
+                  <span className="block text-slate-600">{job.note}</span>
+                ) : null}
               </li>
             ))}
           </ul>
-        </div>
-      ) : null}
-    </>
+          {has(careersUrl) ? (
+            <p className="mt-2">
+              <CareersLink url={careersUrl} label="See all open roles →" />
+            </p>
+          ) : null}
+        </>
+      ) : (
+        <p className="mt-1 text-slate-600">
+          No relevant roles posted in the last 30 days.{" "}
+          {has(careersUrl) ? (
+            <CareersLink url={careersUrl} label="Browse all open roles →" />
+          ) : null}
+        </p>
+      )}
+    </div>
   );
 }
 
