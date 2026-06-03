@@ -22,6 +22,8 @@ export default function Profiler() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CompanyProfile | null>(null);
+  // Date the current result was queried, used for the PDF/print file name.
+  const [queryDate, setQueryDate] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
 
   // Count up while a lookup runs so the long wait visibly progresses.
@@ -47,6 +49,8 @@ export default function Profiler() {
     setLoading(true);
     setError(null);
     setResult(null);
+    // Stamp the query with today's date (local), e.g. "2026-06-03".
+    setQueryDate(new Date().toLocaleDateString("en-CA"));
 
     try {
       const res = await fetch("/api/profile", {
@@ -114,6 +118,27 @@ export default function Profiler() {
     } finally {
       setLoading(false);
     }
+  }
+
+  // Browsers seed the "Save as PDF" file name from document.title. Swap in
+  // "<company> - <query date>" for the duration of the print dialog, then
+  // restore the original title afterward.
+  function handlePrint() {
+    const previousTitle = document.title;
+    if (result) {
+      const date = queryDate ?? new Date().toLocaleDateString("en-CA");
+      // Strip characters that are illegal in file names on common OSes.
+      const safeName =
+        result.name.replace(/[\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim() ||
+        "Company Profile";
+      document.title = `${safeName} - ${date}`;
+    }
+    const restore = () => {
+      document.title = previousTitle;
+      window.removeEventListener("afterprint", restore);
+    };
+    window.addEventListener("afterprint", restore);
+    window.print();
   }
 
   return (
@@ -254,7 +279,7 @@ export default function Profiler() {
         <div className="mt-8">
           <div className="no-print mb-4 flex justify-end">
             <button
-              onClick={() => window.print()}
+              onClick={handlePrint}
               className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
             >
               Print / Save as PDF
