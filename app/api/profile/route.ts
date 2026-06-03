@@ -6,6 +6,8 @@ import {
   PROFILE_RATE_LIMIT,
   PROFILE_RATE_WINDOW_MS,
   PROFILE_MAX_CONCURRENT,
+  PROFILE_GLOBAL_RATE_LIMIT,
+  PROFILE_GLOBAL_MAX_CONCURRENT,
   resolveModel,
 } from "@/lib/config";
 import { rateLimit, acquireSlot, releaseSlot, clientIp } from "@/lib/ratelimit";
@@ -22,6 +24,10 @@ import {
 // cut off at ~5 min, enable Fluid Compute in Vercel (Settings -> Functions).
 export const runtime = "nodejs";
 export const maxDuration = 600;
+
+// Shared key for the process-wide (IP-independent) rate-limit and concurrency
+// backstops. Constant so every request counts against the same global bucket.
+const GLOBAL_KEY = "profile:__global__";
 
 // Returns a safe, user-facing message. Full error details are logged
 // server-side by the caller; we deliberately avoid echoing provider internals
@@ -96,12 +102,39 @@ export async function POST(req: Request) {
     return Response.json({ error: "Please provide a company." }, { status: 400 });
   }
 
+  // Process-wide rate-limit backstop: the per-IP key is derived from a spoofable
+  // header, so also cap total runs per instance regardless of the claimed IP.
+  // Checked only here — after auth and validation — so cheap rejected requests
+  // can't burn the shared budget and deny service to everyone. This bounds
+  // worst-case Anthropic spend even under IP rotation or an open (no-password) app.
+  const globalLimited = rateLimit(
+    GLOBAL_KEY,
+    PROFILE_GLOBAL_RATE_LIMIT,
+    PROFILE_RATE_WINDOW_MS
+  );
+  if (!globalLimited.ok) {
+    return Response.json(
+      { error: "The profiler is busy right now. Please try again shortly." },
+      { status: 429, headers: { "Retry-After": String(globalLimited.retryAfterSeconds) } }
+    );
+  }
+
   // Cap concurrent in-flight runs per IP so the rate-limit window can't be
   // sidestepped by firing many simultaneous long-running requests.
   const slotKey = `profile:${ip}`;
   if (!acquireSlot(slotKey, PROFILE_MAX_CONCURRENT)) {
     return Response.json(
       { error: "Too many concurrent research requests. Please wait for the current one to finish." },
+      { status: 429, headers: { "Retry-After": "60" } }
+    );
+  }
+
+  // Process-wide concurrency backstop (spoof-proof, unlike the per-IP slot).
+  // If we can't reserve a global slot, release the per-IP one we just took.
+  if (!acquireSlot(GLOBAL_KEY, PROFILE_GLOBAL_MAX_CONCURRENT)) {
+    releaseSlot(slotKey);
+    return Response.json(
+      { error: "The profiler is at capacity. Please try again shortly." },
       { status: 429, headers: { "Retry-After": "60" } }
     );
   }
@@ -155,6 +188,7 @@ export async function POST(req: Request) {
         clearTimeout(timeoutId);
         clearInterval(heartbeat);
         releaseSlot(slotKey);
+        releaseSlot(GLOBAL_KEY);
         controller.close();
       }
     },

@@ -40,6 +40,28 @@ function optStr(value: unknown): string | undefined {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
+// URLs from model output are rendered straight into <a href>. Accept ONLY
+// http(s) links so a crafted "javascript:"/"data:" URL can't execute on click.
+// Returns undefined for anything that isn't a well-formed http(s) URL.
+function safeUrl(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const t = value.trim();
+  if (!t) return undefined;
+  try {
+    const u = new URL(t);
+    if (u.protocol === "http:" || u.protocol === "https:") return t;
+  } catch {
+    // not a parseable absolute URL
+  }
+  return undefined;
+}
+
+// For required URL string fields that fall back to "Not found" (the UI hides a
+// SourceLink whose url is "Not found").
+function urlOrNF(value: unknown): string {
+  return safeUrl(value) ?? NF;
+}
+
 function list(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [];
 }
@@ -72,7 +94,7 @@ function snapshot(value: unknown): CompanySnapshot {
     sector: str(o.sector),
     employees: str(o.employees),
     status: str(o.status),
-    website: str(o.website),
+    website: urlOrNF(o.website),
   };
 }
 
@@ -88,7 +110,7 @@ function culture(value: unknown): CompanyCulture {
     sentiment: str(o.sentiment),
     workLifeBalance: str(o.workLifeBalance),
     generalNotes: str(o.generalNotes),
-    source: optStr(o.source),
+    source: safeUrl(o.source),
   };
 }
 
@@ -110,12 +132,12 @@ function fitAndAngle(value: unknown): CompanyFitAndAngle {
           title: str(x.title),
           location: str(x.location),
           postedDate: str(x.postedDate),
-          url: str(x.url),
+          url: urlOrNF(x.url),
           note: optStr(x.note),
         };
       })
       .filter((j) => j.title !== NF && j.url !== NF),
-    careersUrl: optStr(o.careersUrl),
+    careersUrl: safeUrl(o.careersUrl),
   };
 }
 
@@ -142,26 +164,26 @@ export function normalizeProfile(raw: unknown): CompanyProfile {
         return {
           name: str(x.name),
           description: str(x.description),
-          source: optStr(x.source),
+          source: safeUrl(x.source),
         };
       })
       .filter((p) => p.name !== NF),
     milestones: list(o.milestones)
       .map((p) => {
         const x = rec(p);
-        return { date: str(x.date), summary: str(x.summary), source: optStr(x.source) };
+        return { date: str(x.date), summary: str(x.summary), source: safeUrl(x.source) };
       })
       .filter((m) => m.summary !== NF),
     execChanges: list(o.execChanges)
       .map((p) => {
         const x = rec(p);
-        return { summary: str(x.summary), date: str(x.date), source: optStr(x.source) };
+        return { summary: str(x.summary), date: str(x.date), source: safeUrl(x.source) };
       })
       .filter((c) => c.summary !== NF),
     layoffs: list(o.layoffs)
       .map((p) => {
         const x = rec(p);
-        return { summary: str(x.summary), date: str(x.date), source: optStr(x.source) };
+        return { summary: str(x.summary), date: str(x.date), source: safeUrl(x.source) };
       })
       .filter((l) => l.summary !== NF),
     controversies: list(o.controversies)
@@ -171,7 +193,7 @@ export function normalizeProfile(raw: unknown): CompanyProfile {
           type: controversyType(x.type),
           summary: str(x.summary),
           date: str(x.date),
-          source: optStr(x.source),
+          source: safeUrl(x.source),
         };
       })
       .filter((c) => c.summary !== NF),
@@ -182,14 +204,14 @@ export function normalizeProfile(raw: unknown): CompanyProfile {
           filingType: str(x.filingType),
           date: str(x.date),
           highlight: str(x.highlight),
-          url: str(x.url),
+          url: urlOrNF(x.url),
         };
       })
       .filter((f) => f.highlight !== NF),
     riskFactors: list(o.riskFactors)
       .map((p) => {
         const x = rec(p);
-        return { category: str(x.category), summary: str(x.summary), source: str(x.source) };
+        return { category: str(x.category), summary: str(x.summary), source: urlOrNF(x.source) };
       })
       .filter((r) => r.summary !== NF),
     regulatoryFilings: list(o.regulatoryFilings)
@@ -199,14 +221,14 @@ export function normalizeProfile(raw: unknown): CompanyProfile {
           agency: str(x.agency),
           summary: str(x.summary),
           date: str(x.date),
-          url: str(x.url),
+          url: urlOrNF(x.url),
         };
       })
       .filter((r) => r.summary !== NF),
     majorCustomers: list(o.majorCustomers)
       .map((p) => {
         const x = rec(p);
-        return { name: str(x.name), note: str(x.note), source: optStr(x.source) };
+        return { name: str(x.name), note: str(x.note), source: safeUrl(x.source) };
       })
       .filter((c) => c.name !== NF),
     culture: culture(o.culture),

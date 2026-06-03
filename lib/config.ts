@@ -79,6 +79,14 @@ export const PROFILE_RATE_LIMIT = 10;
 export const PROFILE_RATE_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
 export const PROFILE_MAX_CONCURRENT = 2;
 
+// Process-wide backstop, independent of client IP. The per-IP guards above key
+// off X-Forwarded-For, which a client can spoof to rotate "IPs" and slip the
+// per-IP caps — so these bound total spend per running instance regardless of
+// the claimed IP (and regardless of whether the password gate is enabled).
+// Generous enough for a handful of real users; tune down to cap cost harder.
+export const PROFILE_GLOBAL_RATE_LIMIT = 40; // runs per PROFILE_RATE_WINDOW_MS
+export const PROFILE_GLOBAL_MAX_CONCURRENT = 4; // simultaneous runs per instance
+
 // Login endpoint: throttle password attempts per IP to blunt brute forcing.
 export const LOGIN_RATE_LIMIT = 8;
 export const LOGIN_RATE_WINDOW_MS = 15 * 60 * 1000; // 15 minutes

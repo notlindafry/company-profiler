@@ -20,9 +20,11 @@ export function expectedToken(): string {
 }
 
 function safeEqual(a: string, b: string): boolean {
-  const ab = Buffer.from(a);
-  const bb = Buffer.from(b);
-  if (ab.length !== bb.length) return false;
+  // Hash both sides to fixed-length digests before comparing. This keeps the
+  // comparison constant-time (timingSafeEqual needs equal-length buffers) while
+  // avoiding a length-based early return that would leak the secret's length.
+  const ab = crypto.createHash("sha256").update(a).digest();
+  const bb = crypto.createHash("sha256").update(b).digest();
   return crypto.timingSafeEqual(ab, bb);
 }
 
