@@ -31,9 +31,9 @@ export default function PasswordGate() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="text-xl font-bold text-slate-900">Company Profiler</h1>
-        <p className="mt-1 text-sm text-slate-600">
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+        <h1 className="text-xl font-bold text-[var(--text-strong)]">Company Profiler</h1>
+        <p className="mt-1 text-sm text-[var(--text-muted)]">
           This tool is password-protected. Enter the password to continue.
         </p>
 
@@ -49,19 +49,19 @@ export default function PasswordGate() {
             placeholder="Password"
             autoFocus
             disabled={loading}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100"
+            className="w-full rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-[var(--text-strong)] placeholder:text-[var(--text-muted)] shadow-sm focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] disabled:opacity-60"
           />
           <button
             type="submit"
             disabled={loading}
-            className="mt-3 w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+            className="mt-3 w-full rounded-lg bg-[var(--accent)] px-4 py-2 font-medium text-white shadow-sm transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? "Checking…" : "Enter"}
           </button>
         </form>
 
         {error && (
-          <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <div className="mt-3 rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">
             {error}
           </div>
         )}

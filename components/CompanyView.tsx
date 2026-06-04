@@ -13,7 +13,7 @@ function SourceLink({ url }: { url?: string }) {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="ml-1 text-xs font-medium text-blue-600 hover:underline"
+      className="ml-1 text-xs font-medium text-[var(--link)] hover:underline"
     >
       [source]
     </a>
@@ -30,9 +30,9 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="border-t border-slate-200 py-5">
+    <section className="border-t border-[var(--border)] py-5">
       <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--text-muted)]">
           {title}
         </h2>
         {badge}
@@ -70,14 +70,14 @@ function TemperatureBadge({
         {meta.label}
       </span>
       {has(note) ? (
-        <span className="font-normal normal-case text-slate-500">{note}</span>
+        <span className="font-normal normal-case text-[var(--text-muted)]">{note}</span>
       ) : null}
     </span>
   );
 }
 
 function Empty() {
-  return <p className="text-sm italic text-slate-400">Not found</p>;
+  return <p className="text-sm italic text-[var(--text-muted)]">Not found</p>;
 }
 
 function has(value?: string): boolean {
@@ -95,8 +95,8 @@ function SnapshotRow({ label, value }: { label: string; value?: string }) {
   if (!has(value)) return null;
   return (
     <div>
-      <dt className="text-xs uppercase tracking-wide text-slate-400">{label}</dt>
-      <dd className="text-sm text-slate-800">{value}</dd>
+      <dt className="text-xs uppercase tracking-wide text-[var(--text-muted)]">{label}</dt>
+      <dd className="text-sm text-[var(--text-strong)]">{value}</dd>
     </div>
   );
 }
@@ -108,15 +108,15 @@ export default function CompanyView({
 }) {
   const s = profile.snapshot;
   return (
-    <article className="print-container mx-auto max-w-3xl rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+    <article className="print-container mx-auto max-w-3xl rounded-xl border border-[var(--border)] bg-[var(--surface)] p-8 shadow-sm">
       {/* Header */}
       <header className="pb-2">
-        <h1 className="text-2xl font-bold text-slate-900">{profile.name}</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-strong)]">{profile.name}</h1>
         {has(s?.status) && (
-          <p className="mt-1 text-lg text-slate-700">{s.status}</p>
+          <p className="mt-1 text-lg text-[var(--text)]">{s.status}</p>
         )}
         {has(profile.overview) && (
-          <p className="mt-2 text-slate-600">{profile.overview}</p>
+          <p className="mt-2 text-[var(--text-muted)]">{profile.overview}</p>
         )}
       </header>
 
@@ -137,7 +137,7 @@ export default function CompanyView({
                 href={s.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="break-all text-blue-600 hover:underline"
+                className="break-all text-[var(--link)] hover:underline"
               >
                 {s.website}
               </a>
@@ -152,9 +152,9 @@ export default function CompanyView({
           <ul className="space-y-2">
             {profile.products.map((p, i) => (
               <li key={i} className="text-sm">
-                <span className="font-semibold text-slate-900">{p.name}</span>
+                <span className="font-semibold text-[var(--text-strong)]">{p.name}</span>
                 {has(p.description) ? (
-                  <span className="text-slate-700"> — {p.description}</span>
+                  <span className="text-[var(--text)]"> — {p.description}</span>
                 ) : null}
                 <SourceLink url={p.source} />
               </li>
@@ -170,9 +170,9 @@ export default function CompanyView({
         {profile.milestones?.length ? (
           <ul className="space-y-2">
             {profile.milestones.map((m, i) => (
-              <li key={i} className="text-sm text-slate-700">
+              <li key={i} className="text-sm text-[var(--text)]">
                 {has(m.date) && (
-                  <span className="font-medium text-slate-900">{m.date}: </span>
+                  <span className="font-medium text-[var(--text-strong)]">{m.date}: </span>
                 )}
                 {m.summary}
                 <SourceLink url={m.source} />
@@ -189,9 +189,9 @@ export default function CompanyView({
         {profile.execChanges?.length ? (
           <ul className="space-y-2">
             {profile.execChanges.map((c, i) => (
-              <li key={i} className="text-sm text-slate-700">
+              <li key={i} className="text-sm text-[var(--text)]">
                 {has(c.date) && (
-                  <span className="font-medium text-slate-900">{c.date}: </span>
+                  <span className="font-medium text-[var(--text-strong)]">{c.date}: </span>
                 )}
                 {c.summary}
                 <SourceLink url={c.source} />
@@ -208,9 +208,9 @@ export default function CompanyView({
         {profile.layoffs?.length ? (
           <ul className="space-y-2">
             {profile.layoffs.map((l, i) => (
-              <li key={i} className="text-sm text-slate-700">
+              <li key={i} className="text-sm text-[var(--text)]">
                 {has(l.date) && (
-                  <span className="font-medium text-slate-900">{l.date}: </span>
+                  <span className="font-medium text-[var(--text-strong)]">{l.date}: </span>
                 )}
                 {l.summary}
                 <SourceLink url={l.source} />
@@ -218,7 +218,7 @@ export default function CompanyView({
             ))}
           </ul>
         ) : (
-          <p className="text-sm italic text-slate-400">None found.</p>
+          <p className="text-sm italic text-[var(--text-muted)]">None found.</p>
         )}
       </Section>
 
@@ -231,16 +231,16 @@ export default function CompanyView({
                 <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium uppercase text-amber-700">
                   {CONTROVERSY_LABEL[c.type] ?? "Other"}
                 </span>{" "}
-                <span className="text-slate-700">{c.summary}</span>
+                <span className="text-[var(--text)]">{c.summary}</span>
                 {has(c.date) ? (
-                  <span className="text-slate-500"> · {c.date}</span>
+                  <span className="text-[var(--text-muted)]"> · {c.date}</span>
                 ) : null}
                 <SourceLink url={c.source} />
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm italic text-slate-400">None found.</p>
+          <p className="text-sm italic text-[var(--text-muted)]">None found.</p>
         )}
       </Section>
 
@@ -250,12 +250,12 @@ export default function CompanyView({
           <ul className="space-y-2">
             {profile.secFilingsHighlights.map((f, i) => (
               <li key={i} className="text-sm">
-                <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium uppercase text-slate-500">
+                <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium uppercase text-slate-600">
                   {f.filingType}
                 </span>{" "}
-                <span className="text-slate-700">{f.highlight}</span>
+                <span className="text-[var(--text)]">{f.highlight}</span>
                 {has(f.date) ? (
-                  <span className="text-slate-500"> · {f.date}</span>
+                  <span className="text-[var(--text-muted)]"> · {f.date}</span>
                 ) : null}
                 <SourceLink url={f.url} />
               </li>
@@ -273,11 +273,11 @@ export default function CompanyView({
             {profile.riskFactors.map((r, i) => (
               <li key={i} className="text-sm">
                 {has(r.category) && (
-                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium uppercase text-slate-500">
+                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium uppercase text-slate-600">
                     {r.category}
                   </span>
                 )}{" "}
-                <span className="text-slate-700">{r.summary}</span>
+                <span className="text-[var(--text)]">{r.summary}</span>
                 <SourceLink url={r.source} />
               </li>
             ))}
@@ -293,11 +293,11 @@ export default function CompanyView({
           <ul className="space-y-2">
             {profile.regulatoryFilings.map((r, i) => (
               <li key={i} className="text-sm">
-                <span className="font-medium text-slate-900">{r.agency}</span>
+                <span className="font-medium text-[var(--text-strong)]">{r.agency}</span>
                 {": "}
-                <span className="text-slate-700">{r.summary}</span>
+                <span className="text-[var(--text)]">{r.summary}</span>
                 {has(r.date) ? (
-                  <span className="text-slate-500"> · {r.date}</span>
+                  <span className="text-[var(--text-muted)]"> · {r.date}</span>
                 ) : null}
                 <SourceLink url={r.url} />
               </li>
@@ -314,9 +314,9 @@ export default function CompanyView({
           <ul className="space-y-2">
             {profile.majorCustomers.map((c, i) => (
               <li key={i} className="text-sm">
-                <span className="font-medium text-slate-900">{c.name}</span>
+                <span className="font-medium text-[var(--text-strong)]">{c.name}</span>
                 {has(c.note) ? (
-                  <span className="text-slate-700"> — {c.note}</span>
+                  <span className="text-[var(--text)]"> — {c.note}</span>
                 ) : null}
                 <SourceLink url={c.source} />
               </li>
@@ -388,13 +388,13 @@ export default function CompanyView({
       {/* Unknowns */}
       <Section title="Unknowns / low-confidence">
         {profile.unknowns?.length ? (
-          <ul className="list-disc space-y-1 pl-5 text-sm text-amber-700">
+          <ul className="list-disc space-y-1 pl-5 text-sm text-[var(--warn)]">
             {profile.unknowns.map((u, i) => (
               <li key={i}>{u}</li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm italic text-slate-400">None flagged.</p>
+          <p className="text-sm italic text-[var(--text-muted)]">None flagged.</p>
         )}
       </Section>
     </article>
@@ -405,8 +405,8 @@ function CultureRow({ label, value }: { label: string; value?: string }) {
   if (!has(value)) return null;
   return (
     <div>
-      <dt className="font-semibold text-slate-800">{label}</dt>
-      <dd className="text-slate-700">{value}</dd>
+      <dt className="font-semibold text-[var(--text-strong)]">{label}</dt>
+      <dd className="text-[var(--text)]">{value}</dd>
     </div>
   );
 }
@@ -418,7 +418,7 @@ function CareersLink({ url, label }: { url?: string; label: string }) {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="font-medium text-blue-600 hover:underline"
+      className="font-medium text-[var(--link)] hover:underline"
     >
       {label}
     </a>
@@ -432,24 +432,24 @@ function W2Hiring({ fit }: { fit?: CompanyFitAndAngle }) {
   const careersUrl = fit?.careersUrl;
   return (
     <div>
-      <h3 className="font-semibold text-slate-800">
+      <h3 className="font-semibold text-[var(--text-strong)]">
         Open roles posted in the last 30 days
       </h3>
       {postings.length ? (
         <>
-          <ul className="mt-1 space-y-2 text-slate-700">
+          <ul className="mt-1 space-y-2 text-[var(--text)]">
             {postings.map((job, i) => (
               <li key={i}>
-                <span className="font-medium text-slate-900">{job.title}</span>
+                <span className="font-medium text-[var(--text-strong)]">{job.title}</span>
                 {has(job.location) ? (
-                  <span className="text-slate-600"> · {job.location}</span>
+                  <span className="text-[var(--text-muted)]"> · {job.location}</span>
                 ) : null}
                 {has(job.postedDate) ? (
-                  <span className="text-slate-500"> · {job.postedDate}</span>
+                  <span className="text-[var(--text-muted)]"> · {job.postedDate}</span>
                 ) : null}
                 <SourceLink url={job.url} />
                 {has(job.note) ? (
-                  <span className="block text-slate-600">{job.note}</span>
+                  <span className="block text-[var(--text-muted)]">{job.note}</span>
                 ) : null}
               </li>
             ))}
@@ -461,7 +461,7 @@ function W2Hiring({ fit }: { fit?: CompanyFitAndAngle }) {
           ) : null}
         </>
       ) : (
-        <p className="mt-1 text-slate-600">
+        <p className="mt-1 text-[var(--text-muted)]">
           No relevant roles posted in the last 30 days.{" "}
           {has(careersUrl) ? (
             <CareersLink url={careersUrl} label="Browse all open roles →" />
@@ -475,15 +475,15 @@ function W2Hiring({ fit }: { fit?: CompanyFitAndAngle }) {
 function FitList({ label, items }: { label: string; items?: string[] }) {
   return (
     <div>
-      <h3 className="font-semibold text-slate-800">{label}</h3>
+      <h3 className="font-semibold text-[var(--text-strong)]">{label}</h3>
       {items?.length ? (
-        <ul className="mt-1 list-disc space-y-1 pl-5 text-slate-700">
+        <ul className="mt-1 list-disc space-y-1 pl-5 text-[var(--text)]">
           {items.map((item, i) => (
             <li key={i}>{item}</li>
           ))}
         </ul>
       ) : (
-        <p className="mt-1 italic text-slate-400">Not found</p>
+        <p className="mt-1 italic text-[var(--text-muted)]">Not found</p>
       )}
     </div>
   );

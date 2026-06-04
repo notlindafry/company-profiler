@@ -145,10 +145,10 @@ export default function Profiler() {
     <main className="mx-auto max-w-3xl px-4 py-10">
       {/* Header + form (hidden when printing) */}
       <div className="no-print">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+        <h1 className="text-3xl font-bold tracking-tight text-[var(--text-strong)]">
           Company Profiler
         </h1>
-        <p className="mt-2 text-slate-600">
+        <p className="mt-2 text-[var(--text-muted)]">
           Enter a company and we&apos;ll research it on the live web — products,
           milestones, controversies, SEC and regulatory filings, major customers —
           and return a clean, sourced profile. Every profile closes with three{" "}
@@ -158,12 +158,12 @@ export default function Profiler() {
 
         <form
           onSubmit={handleSubmit}
-          className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+          className="mt-6 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm"
         >
           <div>
             <label
               htmlFor="company"
-              className="block text-sm font-medium text-slate-700"
+              className="block text-sm font-medium text-[var(--text)]"
             >
               Company
             </label>
@@ -174,17 +174,17 @@ export default function Profiler() {
               onChange={(e) => setCompany(e.target.value)}
               placeholder="e.g. Acme Corp"
               disabled={loading}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100"
+              className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-[var(--text-strong)] placeholder:text-[var(--text-muted)] shadow-sm focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] disabled:opacity-60"
             />
           </div>
 
           <div className="mt-4">
             <label
               htmlFor="detail"
-              className="block text-sm font-medium text-slate-700"
+              className="block text-sm font-medium text-[var(--text)]"
             >
               Website or ticker{" "}
-              <span className="font-normal text-slate-400">(optional)</span>
+              <span className="font-normal text-[var(--text-muted)]">(optional)</span>
             </label>
             <input
               id="detail"
@@ -193,9 +193,9 @@ export default function Profiler() {
               onChange={(e) => setDetail(e.target.value)}
               placeholder="e.g. acme.com or NASDAQ: ACME"
               disabled={loading}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100"
+              className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-[var(--text-strong)] placeholder:text-[var(--text-muted)] shadow-sm focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] disabled:opacity-60"
             />
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-[var(--text-muted)]">
               Helps pin the exact company when the name is generic (a website is
               the most precise).
             </p>
@@ -203,9 +203,9 @@ export default function Profiler() {
 
           {/* Model selector — controls how "expensive" the analysis is. */}
           <fieldset className="mt-4" disabled={loading}>
-            <legend className="block text-sm font-medium text-slate-700">
+            <legend className="block text-sm font-medium text-[var(--text)]">
               Analysis depth{" "}
-              <span className="font-normal text-slate-400">(controls cost)</span>
+              <span className="font-normal text-[var(--text-muted)]">(controls cost)</span>
             </legend>
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
               {MODEL_OPTIONS.map((opt) => {
@@ -215,8 +215,8 @@ export default function Profiler() {
                     key={opt.tier}
                     className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 shadow-sm transition ${
                       selected
-                        ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500"
-                        : "border-slate-300 bg-white hover:bg-slate-50"
+                        ? "border-[var(--accent)] bg-[var(--surface-2)] ring-1 ring-[var(--accent)]"
+                        : "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-2)]"
                     } ${loading ? "cursor-not-allowed opacity-60" : ""}`}
                   >
                     <input
@@ -226,13 +226,13 @@ export default function Profiler() {
                       checked={selected}
                       onChange={() => setModel(opt.tier)}
                       disabled={loading}
-                      className="mt-0.5 h-4 w-4 text-blue-600 focus:ring-blue-500"
+                      className="mt-0.5 h-4 w-4 accent-[var(--accent)] focus:ring-[var(--accent)]"
                     />
                     <span>
-                      <span className="block text-sm font-medium text-slate-900">
+                      <span className="block text-sm font-medium text-[var(--text-strong)]">
                         {opt.label}
                       </span>
-                      <span className="block text-xs text-slate-500">
+                      <span className="block text-xs text-[var(--text-muted)]">
                         {opt.blurb}
                       </span>
                     </span>
@@ -245,27 +245,27 @@ export default function Profiler() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-4 inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+            className="mt-4 inline-flex items-center rounded-lg bg-[var(--accent)] px-4 py-2 font-medium text-white shadow-sm transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? "Researching…" : "Research company"}
           </button>
         </form>
 
         {error && (
-          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="mt-4 rounded-lg border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-300">
             {error}
           </div>
         )}
 
         {loading && (
-          <div className="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mt-6 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
             <div className="flex items-center gap-3">
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
-              <p className="text-slate-700">
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--border)] border-t-[var(--accent)]" />
+              <p className="text-[var(--text)]">
                 Searching the live web and building the company profile… this
                 usually takes a few minutes, so hang tight — you can leave this
                 tab open.{" "}
-                <span className="whitespace-nowrap text-slate-400">
+                <span className="whitespace-nowrap text-[var(--text-muted)]">
                   ({formatElapsed(elapsed)} elapsed)
                 </span>
               </p>
@@ -280,7 +280,7 @@ export default function Profiler() {
           <div className="no-print mb-4 flex justify-end">
             <button
               onClick={handlePrint}
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+              className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-medium text-[var(--text)] shadow-sm hover:bg-[var(--surface-2)]"
             >
               Print / Save as PDF
             </button>

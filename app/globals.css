@@ -2,24 +2,66 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---------------------------------------------------------------------------
+   Theme tokens. The app defaults to DARK on screen (the values in :root). The
+   @media print block below re-points the same tokens to a light/white palette,
+   so the Save-as-PDF output stays clean white with dark text without touching
+   any component markup. Components reference these via Tailwind arbitrary
+   values, e.g. bg-[var(--surface)] / text-[var(--text)].
+   --------------------------------------------------------------------------- */
 :root {
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     Helvetica, Arial, sans-serif;
+
+  /* Dark theme (screen default) */
+  --bg: #1d231c; /* page background */
+  --surface: #252d23; /* cards / panels, lifted off the page */
+  --surface-2: #2d352b; /* inputs, hover states */
+  --border: #3a4537; /* subtle dividers / outlines */
+  --text: #e1dfd9; /* primary body text (cream) */
+  --text-strong: #ffffff; /* headings / emphasis */
+  --text-muted: #9aa597; /* labels / secondary text */
+  --accent: #4a7850; /* primary action / brand green */
+  --accent-hover: #5c9063; /* hover state for accent */
+  --accent-text: #ffffff; /* text on an accent fill */
+  --link: #8fbf94; /* lightened green for readable links on dark */
+  --warn: #e0a458; /* amber for low-confidence notes on dark */
+
+  color-scheme: dark;
 }
 
 body {
   font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
 }
 
-/* Print / Save-as-PDF styles: hide the page chrome and let the profile fill
-   the page cleanly. Elements marked .no-print are hidden when printing. */
+/* Print / Save-as-PDF styles: light palette, hide page chrome, let the profile
+   fill the page cleanly. Elements marked .no-print are hidden when printing. */
 @media print {
+  :root {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #ffffff;
+    --border: #e2e8f0; /* slate-200 */
+    --text: #334155; /* slate-700 */
+    --text-strong: #0f172a; /* slate-900 */
+    --text-muted: #64748b; /* slate-500 */
+    --accent: #2563eb; /* blue-600 */
+    --accent-hover: #1d4ed8;
+    --accent-text: #ffffff;
+    --link: #2563eb;
+    --warn: #b45309; /* amber-700 */
+
+    color-scheme: light;
+  }
+
   .no-print {
     display: none !important;
   }
 
   body {
-    background: white;
+    background: #ffffff;
   }
 
   .print-container {
