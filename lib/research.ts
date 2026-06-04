@@ -4,7 +4,7 @@ import {
   RESULT_CACHE_TTL_MS,
   resolveModel,
 } from "./config";
-import { SYSTEM_PROMPT, buildCompanyPrompt } from "./prompt";
+import { buildSystemPrompt, buildCompanyPrompt } from "./prompt";
 import { normalizeProfile } from "./normalize";
 import { cacheGet, cacheSet } from "./cache";
 import type { CompanyProfile } from "./schema";
@@ -43,9 +43,11 @@ export async function researchCompany(
   // Resolve the requested tier to a concrete, validated model option (falls back
   // to the default for anything unrecognized). The option carries the model ID
   // plus the cost/depth knobs (effort, search budget) for this run.
-  const { id: model, effort, maxWebSearches } = resolveModel(
+  const { id: model, effort, maxWebSearches, thorough } = resolveModel(
     modelTier ?? DEFAULT_MODEL_TIER
   );
+  // Premium tiers get the deep-research system prompt; default tiers the fast one.
+  const system = buildSystemPrompt(thorough);
 
   // Reuse a recent identical result instead of re-running the expensive pipeline.
   const key = cacheKey(company, detail, model);
@@ -71,7 +73,7 @@ export async function researchCompany(
         model,
         max_tokens: 16000,
         output_config: { effort },
-        system: SYSTEM_PROMPT,
+        system,
         tools: [
           {
             type: "web_search_20250305",
@@ -107,7 +109,7 @@ export async function researchCompany(
           model,
           max_tokens: 16000,
           output_config: { effort },
-          system: SYSTEM_PROMPT,
+          system,
           messages,
         },
         requestOptions

@@ -22,6 +22,8 @@ export interface ModelOption {
   // Per-tier cost/depth knobs, so the selector dials more than just the model:
   effort: EffortLevel; // reasoning effort per call
   maxWebSearches: number; // web_search max_uses per search pass (~2 passes total)
+  thorough: boolean; // true = deep-research prompt (fill every section, dig for facts);
+  // false = fast prompt (handful of searches, partial profile is fine)
 }
 
 // Order = display order in the UI.
@@ -33,6 +35,7 @@ export const MODEL_OPTIONS: ModelOption[] = [
     blurb: "Faster and cheaper — lighter research, solid for most lookups",
     effort: "medium",
     maxWebSearches: 5,
+    thorough: false,
   },
   {
     tier: "opus",
@@ -41,6 +44,7 @@ export const MODEL_OPTIONS: ModelOption[] = [
     blurb: "Most capable, most expensive — deeper reasoning and more searches",
     effort: "high",
     maxWebSearches: 9,
+    thorough: true,
   },
 ];
 
