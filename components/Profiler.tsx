@@ -15,7 +15,11 @@ function formatElapsed(seconds: number): string {
   return m > 0 ? `${m}m ${s}s` : `${s}s`;
 }
 
-export default function Profiler() {
+export default function Profiler({
+  gateEnabled = false,
+}: {
+  gateEnabled?: boolean;
+}) {
   const [company, setCompany] = useState("");
   const [detail, setDetail] = useState("");
   const [model, setModel] = useState<ModelTier>(DEFAULT_MODEL_TIER);
@@ -25,6 +29,7 @@ export default function Profiler() {
   // Date the current result was queried, used for the PDF/print file name.
   const [queryDate, setQueryDate] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   // Count up while a lookup runs so the long wait visibly progresses.
   useEffect(() => {
@@ -141,13 +146,37 @@ export default function Profiler() {
     window.print();
   }
 
+  // End the session: clear the httpOnly auth cookie server-side, then reload so
+  // the page re-renders behind the password gate.
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await fetch("/api/logout", { method: "POST" });
+    } catch {
+      // Even if the request fails, reload — the cookie may already be gone.
+    }
+    window.location.reload();
+  }
+
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
       {/* Header + form (hidden when printing) */}
       <div className="no-print">
-        <h1 className="text-3xl font-bold tracking-tight text-[var(--text-strong)]">
-          Company Profiler
-        </h1>
+        <div className="flex items-start justify-between gap-4">
+          <h1 className="text-3xl font-bold tracking-tight text-[var(--text-strong)]">
+            Company Profiler
+          </h1>
+          {gateEnabled && (
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="mt-1 shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-sm font-medium text-[var(--text-muted)] shadow-sm transition hover:bg-[var(--surface-2)] hover:text-[var(--text)] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loggingOut ? "Logging out…" : "Log out"}
+            </button>
+          )}
+        </div>
         <p className="mt-2 text-[var(--text-muted)]">
           Enter a company and we&apos;ll research it on the live web — products,
           milestones, controversies, SEC and regulatory filings, major customers —

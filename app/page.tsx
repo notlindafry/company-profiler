@@ -24,5 +24,5 @@ export default async function Home() {
       return <PasswordGate />;
     }
   }
-  return <Profiler />;
+  return <Profiler gateEnabled={isGateEnabled()} />;
 }
