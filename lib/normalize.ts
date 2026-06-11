@@ -148,7 +148,6 @@ function fitAndAngles(value: unknown): FitAndAngleByIntent {
   return {
     w2: fitAndAngle(o.w2),
     advisory: fitAndAngle(o.advisory),
-    network: fitAndAngle(o.network),
   };
 }
 

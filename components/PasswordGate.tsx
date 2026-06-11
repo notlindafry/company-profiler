@@ -32,7 +32,7 @@ export default function PasswordGate() {
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
       <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
-        <h1 className="text-xl font-bold text-[var(--text-strong)]">Company Profiler</h1>
+        <h1 className="text-xl font-bold text-[var(--text-strong)]">Linda's Company Profiler</h1>
         <p className="mt-1 text-sm text-[var(--text-muted)]">
           This tool is password-protected. Enter the password to continue.
         </p>

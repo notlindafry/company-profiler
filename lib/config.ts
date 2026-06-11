@@ -102,8 +102,8 @@ export const RESULT_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 // ---------------------------------------------------------------------------
 // "About me" — used ONLY to tailor the final "Fit & Angle" sections of each
 // profile. Edit this to match your own background. Every profile produces all
-// three Fit & Angle lenses (W2 / advisory / network); this background feeds all
-// three, so keep both the practice and the W2 criteria here.
+// two Fit & Angle lenses (W2 / advisory); this background feeds both,
+// so keep both the practice and the W2 criteria here.
 // ---------------------------------------------------------------------------
 export const ABOUT_ME = `
 - Level / domain: Director / Sr. Director / VP — GRC & Technology Risk. 12+ years.

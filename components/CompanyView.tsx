@@ -348,7 +348,7 @@ export default function CompanyView({
         )}
       </Section>
 
-      {/* Fit & Angle — one section per lens (W2 role, advisory client, network) */}
+      {/* Fit & Angle — one section per lens (W2 role, advisory client) */}
       {INTENTS.map((meta) => {
         const fit = profile.fitAndAngle?.[meta.value];
         return (

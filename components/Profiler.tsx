@@ -164,7 +164,7 @@ export default function Profiler({
       <div className="no-print">
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-3xl font-bold tracking-tight text-[var(--text-strong)]">
-            Company Profiler
+            Linda's Company Profiler
           </h1>
           {gateEnabled && (
             <button
@@ -180,9 +180,9 @@ export default function Profiler({
         <p className="mt-2 text-[var(--text-muted)]">
           Enter a company and we&apos;ll research it on the live web — products,
           milestones, controversies, SEC and regulatory filings, major customers —
-          and return a clean, sourced profile. Every profile closes with three{" "}
-          <em>Fit &amp; Angle</em> reads: as a full-time (W2) role, as a Second Line
-          Labs advisory client, and as a network relationship.
+          and return a clean, sourced profile. Every profile closes with two{" "}
+          <em>Fit &amp; Angle</em> reads: as a full-time (W2) role and as a Second Line
+          Labs advisory client.
         </p>
 
         <form

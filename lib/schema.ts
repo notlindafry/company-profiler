@@ -111,13 +111,12 @@ export interface CompanyFitAndAngle {
   careersUrl?: string; // fallback link to all open roles when nothing recent matches
 }
 
-// The three lenses every profile is evaluated through. These reshape only the
+// The two lenses every profile is evaluated through. These reshape only the
 // closing "Fit & Angle" sections — the factual sections stay objective. Every
-// profile now includes all three; there is no selection to make.
+// profile now includes both; there is no selection to make.
 //   w2       — a potential full-time role for me
 //   advisory — a potential advisory client for Second Line Labs (my practice)
-//   network  — a relationship bet (time, advisor-investor seat, warm intros)
-export type ProfileIntent = "w2" | "advisory" | "network";
+export type ProfileIntent = "w2" | "advisory";
 
 export interface IntentMeta {
   value: ProfileIntent;
@@ -130,7 +129,7 @@ export interface IntentMeta {
   };
 }
 
-// Rendered top-to-bottom in this order: full-time W2 role, advisory client, network.
+// Rendered top-to-bottom in this order: full-time W2 role, advisory client.
 export const INTENTS: IntentMeta[] = [
   {
     value: "w2",
@@ -152,20 +151,10 @@ export const INTENTS: IntentMeta[] = [
       questionsToAsk: "Scoping questions",
     },
   },
-  {
-    value: "network",
-    sectionTitle: "Fit & Angle — as a network relationship",
-    fieldLabels: {
-      whyItCouldFitYou: "Why this relationship could be worth building",
-      watchOuts: "Watch-outs",
-      talkingPoints: "Angles to build the relationship",
-      questionsToAsk: "Questions to ask",
-    },
-  },
 ];
 
 // One Fit & Angle assessment per lens, keyed by intent.
-export type FitAndAngleByIntent = Record<ProfileIntent, CompanyFitAndAngle>;
+export type FitAndAngleByIntent = { w2: CompanyFitAndAngle; advisory: CompanyFitAndAngle };
 
 export interface CompanyProfile {
   name: string;

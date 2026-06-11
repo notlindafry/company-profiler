@@ -21,8 +21,8 @@ export function buildSystemPrompt(thorough: boolean): string {
   const depthRule = thorough ? DEPTH_RULE_THOROUGH : DEPTH_RULE_FAST;
   return `
 You are a research assistant. You produce factual, sourced profiles of companies
-for someone evaluating each company through three lenses at once — a potential
-full-time role, an advisory engagement, and a network relationship. Tailor ONLY
+for someone evaluating each company through two lenses at once — a potential
+full-time role and an advisory engagement. Tailor ONLY
 the closing "fit & angle" assessments to those lenses (one per lens), and keep
 every factual section objective regardless.
 
@@ -149,14 +149,6 @@ and empty arrays [] for sections with no findings):
       "watchOuts": [string],
       "talkingPoints": [string],
       "questionsToAsk": [string]
-    },
-    "network": {
-      "temperature": "green" | "orange" | "red",
-      "temperatureNote": string,
-      "whyItCouldFitYou": [string],
-      "watchOuts": [string],
-      "talkingPoints": [string],
-      "questionsToAsk": [string]
     }
   },
   "unknowns": [string]
@@ -211,13 +203,13 @@ Notes on specific fields:
 `.trim();
 }
 
-// The "fitAndAngle" object is the only part tailored to the user. It holds THREE
-// independent assessments — one per lens (w2, advisory, network) — so a single
+// The "fitAndAngle" object is the only part tailored to the user. It holds TWO
+// independent assessments — one per lens (w2, advisory) — so a single
 // profile serves every angle without the user choosing one up front.
 function fitAndAngleGuidance(): string {
   return `
-Fill "fitAndAngle" with THREE independent assessments — one under each of the keys
-"w2", "advisory", and "network". Each is its own object with the same four arrays
+Fill "fitAndAngle" with TWO independent assessments — one under each of the keys
+"w2" and "advisory". Each is its own object with the same four arrays
 (whyItCouldFitYou, watchOuts, talkingPoints, questionsToAsk), framed entirely by that
 lens as described below. The factual sections above stay objective and identical
 regardless of lens.
@@ -228,8 +220,8 @@ my needs and criteria in "About me":
 - "green"  = good fit for this angle — strong, clear match worth pursuing.
 - "orange" = mixed or unclear — some fit but real caveats, or not enough signal to call.
 - "red"    = poor fit for this angle — weak match, better passed on for this lens.
-Judge each lens ON ITS OWN: the same company can be (say) red as a W2 role but green as a
-network relationship. Base the rating on the evidence you actually gathered, not optimism.
+Judge each lens ON ITS OWN: the same company can be (say) red as a W2 role but green as an
+advisory client. Base the rating on the evidence you actually gathered, not optimism.
 Also give "temperatureNote": ONE short sentence (roughly 10-20 words) saying why you landed
 on that color for this lens. If you genuinely cannot judge a lens, use "orange" with a note
 explaining what is missing.
@@ -279,25 +271,7 @@ need my practice could serve and whether they would buy advisory help:
   the need (who owns risk today, what triggered the need, budget and timeline, board or
   regulator pressure, in-house vs. fractional preference).
 
-"network" — I am evaluating this company as a NETWORK relationship — whether it is
-worth my time and energy to build a connection here (warm intros, an advisor seat,
-ongoing dialogue with leadership, mutual support). I am NOT evaluating it as a job for
-myself under this lens, and I am NOT making a financial investment decision — do not
-discuss capital, equity, returns, valuation, runway as an investment factor, or
-diligence-for-investing:
-- whyItCouldFitYou: 3-5 points on why this relationship could be worth building — who I
-  would meet, alignment with my GRC / Tech Risk world, what we might learn from each
-  other, and any natural edge I have for being useful to them (e.g. an advisor seat
-  leveraging my background in a regulated space).
-- watchOuts: 2-4 honest flags that would make this a poor use of relationship energy —
-  values or reputation concerns, leadership churn that makes connections short-lived,
-  irrelevance to my world, or signs they would not reciprocate.
-- talkingPoints: 3-5 angles to build the relationship — who to know, warm-intro paths,
-  and concrete value I could offer (e.g. an advisory seat on risk / compliance, intros
-  from my network, a perspective on a current challenge).
-- questionsToAsk: 3-5 questions to surface where the relationship could go — what they
-  are wrestling with, who in their world I should know, how they prefer to collaborate
-  with outside operators.`.trim();
+`.trim();
 }
 
 export function buildCompanyPrompt(company: string, detail?: string): string {
@@ -323,7 +297,7 @@ ${recencyGuidance(
 ${companySchemaDescription()}
 
 The factual sections above are objective and do NOT change based on lens.
-Only "fitAndAngle" is tailored to me, and it provides three independent assessments —
+Only "fitAndAngle" is tailored to me, and it provides two independent assessments —
 one per lens — as described below. Do NOT steer the factual sections toward any lens.
 
 ${fitAndAngleGuidance()}
