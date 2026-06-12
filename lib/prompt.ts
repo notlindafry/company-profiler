@@ -1,4 +1,9 @@
-import { ABOUT_ME, RECENCY_YEARS } from "./config";
+import {
+  ABOUT_ME,
+  RECENCY_YEARS,
+  ADVISORY_LENS_ENABLED,
+  ADVISORY_NAME,
+} from "./config";
 
 // The depth bullet is tier-dependent. The fast variant (default / Sonnet) caps
 // effort so a profile comes back quickly; the thorough variant (premium / Opus)
@@ -19,12 +24,15 @@ const DEPTH_RULE_THOROUGH = `- Be thorough — this is a deep-research run. Use 
 
 export function buildSystemPrompt(thorough: boolean): string {
   const depthRule = thorough ? DEPTH_RULE_THOROUGH : DEPTH_RULE_FAST;
+  const lensFraming = ADVISORY_LENS_ENABLED
+    ? `through two lenses at once — a potential full-time role and an advisory
+engagement. Tailor ONLY the closing "fit & angle" assessments to those lenses
+(one per lens), and keep every factual section objective regardless.`
+    : `as a potential full-time role. Tailor ONLY the closing "fit & angle"
+assessment to that lens, and keep every factual section objective regardless.`;
   return `
 You are a research assistant. You produce factual, sourced profiles of companies
-for someone evaluating each company through two lenses at once — a potential
-full-time role and an advisory engagement. Tailor ONLY
-the closing "fit & angle" assessments to those lenses (one per lens), and keep
-every factual section objective regardless.
+for someone evaluating each company ${lensFraming}
 
 Hard rules:
 - The user message states TODAY'S DATE. Treat it as the authoritative present —
@@ -79,10 +87,82 @@ Date and recency requirements:
 `.trim();
 }
 
-// The "fitAndAngle" object is the only part tailored to the user. It holds TWO
-// independent assessments — one per lens (w2, advisory) — so a single
-// profile serves every angle without the user choosing one up front.
+// Shared explanation of the traffic-light "temperature" verdict, used by both the
+// single-lens and two-lens variants of the guidance below.
+const TEMPERATURE_RULE = `
+also give a "temperature" — a traffic-light verdict on how strong the fit is, weighing
+your analysis above against my needs and criteria in "About me":
+- "green"  = good fit — strong, clear match worth pursuing.
+- "orange" = mixed or unclear — some fit but real caveats, or not enough signal to call.
+- "red"    = poor fit — weak match, better passed on.
+Base the rating on the evidence you actually gathered, not optimism. Also give a
+"temperatureNote": ONE short sentence (roughly 10-20 words) saying why you landed on that
+color. If you genuinely cannot judge it, use "orange" with a note explaining what is missing.`.trim();
+
+// The full-time ("w2") lens. Generic and driven entirely by "About me", so it works
+// for any field or seniority — the model reads the candidate's background from there.
+const W2_GUIDANCE = `
+"w2" — I am evaluating this company as a potential FULL-TIME role for myself, judged
+against my background and preferences in "About me":
+- whyItCouldFitYou: 3-5 points on whether this company matches what I'm looking for —
+  weigh the things that matter to me per "About me" (level / seniority, function, sector,
+  company size, culture, and location / remote preference).
+- watchOuts: 2-4 honest flags I should weigh (recent layoffs, instability, legal /
+  regulatory overhang, or signs the role wouldn't match what I want).
+- talkingPoints: 3-5 specific things I could raise in an interview.
+- questionsToAsk: 3-5 smart, specific questions about the company or the role.
+- jobPostings: ACTIVELY use web_search to find this company's CURRENTLY OPEN job
+  postings that fit my background (per "About me"). Search the company's official
+  careers/jobs page and reputable job boards. Include ONLY roles posted within the LAST
+  30 DAYS relative to TODAY'S DATE — skip anything posted earlier or with no determinable
+  posting date. For each role provide: "title" (exact posting title), "location"
+  (city/region or "Remote"), "postedDate" (when it was posted), "note" (one line on why
+  it could fit me), and "url" — a VERIFIED, direct link to that SPECIFIC posting. A
+  posting MUST have a working source URL to the exact listing; if you cannot verify the
+  link, do NOT include the posting. If you find no qualifying roles in the last 30 days,
+  return an empty array [].
+- careersUrl: the company's main careers / open-roles page (a single VERIFIED URL), so I
+  can browse everything they have open even when nothing was posted in the last 30 days.
+  Use "Not found" if you cannot locate it.`.trim();
+
+// The optional advisory / consulting lens. Also generic and "About me"-driven; the
+// practice name (if any) comes from ADVISORY_NAME.
+function advisoryGuidance(): string {
+  const who = ADVISORY_NAME ? `${ADVISORY_NAME}, my advisory practice` : "my advisory / consulting practice";
+  return `
+"advisory" — I am ALSO evaluating this company as a potential ADVISORY / CONSULTING
+client for ${who} (fractional or project work). I am NOT looking to be hired full-time
+here under this lens. The question is whether they have a need my practice could serve
+and whether they would buy advisory help — judged against what I offer per "About me":
+- whyItCouldFitYou: 3-5 buying signals that map to what I offer (per "About me") — e.g.
+  scaling fast, recent funding, entering or already in a regulated space, audit / IPO
+  pressure, a recent incident, new or vacant senior leadership in my area, or a thin or
+  nonexistent function. Tie each to a concrete way I could help.
+- watchOuts: 2-4 honest flags that would make them a poor or low-probability client — an
+  already-mature in-house function unlikely to bring in outside help, signs of no budget
+  or financial distress, too small to need help, or obvious conflicts.
+- talkingPoints: 3-5 specific pitch angles — hooks tied to a recent, sourced event
+  (funding, incident, regulatory filing, exec change) I could open a conversation with.
+- questionsToAsk: 3-5 scoping / qualifying questions to size the engagement and confirm
+  the need (who owns this today, what triggered the need, budget and timeline).`.trim();
+}
+
+// The "fitAndAngle" object is the only part tailored to the user. With the advisory
+// lens enabled it holds TWO independent assessments (w2, advisory); otherwise just one
+// (w2). The lens guidance is generic and reads the user's specifics from "About me".
 function fitAndAngleGuidance(): string {
+  if (!ADVISORY_LENS_ENABLED) {
+    return `
+Fill "fitAndAngle" with ONE assessment under the key "w2" — your read on this company as
+a potential full-time role, framed as described below. It is an object with the four
+arrays (whyItCouldFitYou, watchOuts, talkingPoints, questionsToAsk). The factual sections
+above stay objective regardless. Do NOT include an "advisory" assessment.
+
+For the "w2" assessment, ${TEMPERATURE_RULE}
+
+${W2_GUIDANCE}
+`.trim();
+  }
   return `
 Fill "fitAndAngle" with TWO independent assessments — one under each of the keys
 "w2" and "advisory". Each is its own object with the same four arrays
@@ -90,63 +170,13 @@ Fill "fitAndAngle" with TWO independent assessments — one under each of the ke
 lens as described below. The factual sections above stay objective and identical
 regardless of lens.
 
-For EACH lens, also give a "temperature" — a traffic-light verdict on how strong the
-considered relationship is for THAT specific angle, weighing your analysis above against
-my needs and criteria in "About me":
-- "green"  = good fit for this angle — strong, clear match worth pursuing.
-- "orange" = mixed or unclear — some fit but real caveats, or not enough signal to call.
-- "red"    = poor fit for this angle — weak match, better passed on for this lens.
-Judge each lens ON ITS OWN: the same company can be (say) red as a W2 role but green as an
-advisory client. Base the rating on the evidence you actually gathered, not optimism.
-Also give "temperatureNote": ONE short sentence (roughly 10-20 words) saying why you landed
-on that color for this lens. If you genuinely cannot judge a lens, use "orange" with a note
-explaining what is missing.
+For EACH lens, ${TEMPERATURE_RULE}
+Judge each lens ON ITS OWN: the same company can be (say) red as a full-time role but
+green as an advisory client.
 
-"w2" — I am evaluating this company as a potential FULL-TIME (W2) role for myself:
-- whyItCouldFitYou: 3-5 points on whether this company matches what I would take a
-  full-time seat for (size, sector, regulatory posture, whether it likely needs a real
-  second-line GRC / Tech-Risk mandate with a TEAM to lead — not a solo IC seat).
-- watchOuts: 2-4 honest flags I should weigh (recent layoffs, instability, legal /
-  regulatory overhang, signs the role would be a solo IC seat or lack a real mandate).
-- talkingPoints: 3-5 specific things I could raise in an interview.
-- questionsToAsk: 3-5 smart, specific questions about the company or the role.
-- jobPostings: ACTIVELY use web_search to find this company's CURRENTLY OPEN job
-  postings that fit my background (senior GRC / Technology Risk leadership — Director /
-  Sr. Director / VP, and adjacent risk/security leadership). Search the company's
-  official careers/jobs page and reputable job boards. Include ONLY roles posted within
-  the LAST 30 DAYS relative to TODAY'S DATE — skip anything posted earlier or with no
-  determinable posting date. For each role provide: "title" (exact posting title),
-  "location" (city/region or "Remote"), "postedDate" (when it was posted), "note" (one
-  line on why it could fit me), and "url" — a VERIFIED, direct link to that SPECIFIC
-  posting. A posting MUST have a working source URL to the exact listing; if you cannot
-  verify the link, do NOT include the posting. If you find no qualifying roles in the
-  last 30 days, return an empty array [].
-- careersUrl: the company's main careers / open-roles page (a single VERIFIED URL), so I
-  can browse everything they have open even when nothing was posted in the last 30 days.
-  Use "Not found" if you cannot locate it.
+${W2_GUIDANCE}
 
-"advisory" — I am evaluating this company as a potential ADVISORY CLIENT for Second
-Line Labs, my solo advisory practice (fractional / advisory GRC & Tech Risk). I am NOT
-looking to be hired full-time here under this lens. The question is whether they have a
-need my practice could serve and whether they would buy advisory help:
-- whyItCouldFitYou: 3-5 points on why they could be a strong advisory client — buying
-  signals that map to what Second Line Labs offers: scaling fast, recent funding,
-  entering or already in a regulated space, IPO / charter / audit pressure, a recent
-  breach or incident, new or vacant senior risk/security leadership, a thin or
-  nonexistent second line, or leadership churn in risk. Tie each to a concrete way my
-  practice (standing up or maturing GRC, FAIR-based quantitative risk, board / regulator
-  reporting, AI-native risk operating models) would help.
-- watchOuts: 2-4 honest flags that would make them a poor or low-probability advisory
-  client — an already-mature in-house risk function unlikely to bring in outside help,
-  signs of no budget or financial distress, too small to need a real second line, or
-  obvious conflicts.
-- talkingPoints: 3-5 specific pitch angles — hooks tied to a recent, sourced event
-  (funding, breach, regulatory filing, exec change) I could open an intro or scoping
-  conversation with.
-- questionsToAsk: 3-5 scoping / qualifying questions to size the engagement and confirm
-  the need (who owns risk today, what triggered the need, budget and timeline, board or
-  regulator pressure, in-house vs. fractional preference).
-
+${advisoryGuidance()}
 `.trim();
 }
 
@@ -172,9 +202,11 @@ ${recencyGuidance(
 
 The profile's shape and per-field guidance come from the structured output
 schema attached to this request. The factual sections are objective and do NOT
-change based on lens. Only "fitAndAngle" is tailored to me, and it provides two
-independent assessments — one per lens — as described below. Do NOT steer the
-factual sections toward any lens.
+change based on lens. Only "fitAndAngle" is tailored to me${
+    ADVISORY_LENS_ENABLED
+      ? ", and it provides two independent assessments — one per lens —"
+      : ""
+  } as described below. Do NOT steer the factual sections toward any lens.
 
 ${fitAndAngleGuidance()}
 

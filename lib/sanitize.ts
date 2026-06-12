@@ -77,7 +77,10 @@ export function sanitizeProfile(p: CompanyProfile): CompanyProfile {
     culture: { ...p.culture, source: safeUrl(p.culture.source) },
     fitAndAngle: {
       w2: fit(p.fitAndAngle.w2),
-      advisory: fit(p.fitAndAngle.advisory),
+      // Only present when the advisory lens is enabled (see lib/config.ts).
+      ...(p.fitAndAngle.advisory
+        ? { advisory: fit(p.fitAndAngle.advisory) }
+        : {}),
     },
   };
 }

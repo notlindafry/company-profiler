@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ADVISORY_LENS_ENABLED, ADVISORY_NAME } from "./config";
 
 // ---------------------------------------------------------------------------
 // THE single source of truth for the shape of a researched company profile.
@@ -226,10 +227,12 @@ export const CompanyProfileSchema = z.object({
   fitAndAngle: z
     .object({
       w2: FitAndAngleSchema,
-      advisory: FitAndAngleSchema,
+      // The advisory lens is optional: it is only requested (and rendered) when
+      // the advisory lens is enabled. See ADVISORY_LENS_ENABLED in lib/config.ts.
+      advisory: FitAndAngleSchema.optional(),
     })
     .describe(
-      "Two independent assessments — one per lens — following the per-lens instructions in the user message"
+      "One assessment per enabled lens, following the per-lens instructions in the user message"
     ),
   unknowns: z
     .array(z.string())
@@ -250,11 +253,12 @@ export type FitTemperature = (typeof FIT_TEMPERATURES)[number];
 export type ControversyType = (typeof CONTROVERSY_TYPES)[number];
 
 // ---------------------------------------------------------------------------
-// UI metadata for the two evaluation lenses. These reshape only the closing
-// "Fit & Angle" sections — the factual sections stay objective. Every profile
-// includes both; there is no selection to make.
-//   w2       — a potential full-time role for me
-//   advisory — a potential advisory client for Second Line Labs (my practice)
+// UI metadata for the evaluation lenses. These reshape only the closing
+// "Fit & Angle" sections — the factual sections stay objective. By default a
+// profile includes ONE lens (full-time role). Enabling the advisory lens (see
+// ADVISORY_LENS_ENABLED in lib/config.ts) adds a second one:
+//   w2       — a potential full-time role for you
+//   advisory — a potential advisory / consulting client (optional)
 // ---------------------------------------------------------------------------
 
 export type ProfileIntent = "w2" | "advisory";
@@ -270,26 +274,34 @@ export interface IntentMeta {
   };
 }
 
-// Rendered top-to-bottom in this order: full-time W2 role, advisory client.
-export const INTENTS: IntentMeta[] = [
-  {
-    value: "w2",
-    sectionTitle: "Fit & Angle — as a full-time (W2) role",
-    fieldLabels: {
-      whyItCouldFitYou: "Why this role could fit you",
-      watchOuts: "Watch-outs",
-      talkingPoints: "Talking points",
-      questionsToAsk: "Smart questions to ask",
-    },
+const W2_INTENT: IntentMeta = {
+  value: "w2",
+  sectionTitle: "Fit & Angle — as a full-time role",
+  fieldLabels: {
+    whyItCouldFitYou: "Why this role could fit you",
+    watchOuts: "Watch-outs",
+    talkingPoints: "Talking points",
+    questionsToAsk: "Smart questions to ask",
   },
-  {
-    value: "advisory",
-    sectionTitle: "Fit & Angle — as a Second Line Labs advisory client",
-    fieldLabels: {
-      whyItCouldFitYou: "Why they could be a fit for Second Line Labs",
-      watchOuts: "Watch-outs (as an advisory engagement)",
-      talkingPoints: "Pitch angles",
-      questionsToAsk: "Scoping questions",
-    },
+};
+
+const ADVISORY_INTENT: IntentMeta = {
+  value: "advisory",
+  sectionTitle: ADVISORY_NAME
+    ? `Fit & Angle — as an advisory client for ${ADVISORY_NAME}`
+    : "Fit & Angle — as an advisory / consulting client",
+  fieldLabels: {
+    whyItCouldFitYou: ADVISORY_NAME
+      ? `Why they could be a fit for ${ADVISORY_NAME}`
+      : "Why they could be an advisory fit",
+    watchOuts: "Watch-outs (as an advisory engagement)",
+    talkingPoints: "Pitch angles",
+    questionsToAsk: "Scoping questions",
   },
-];
+};
+
+// Rendered top-to-bottom in this order. The advisory lens is only included when
+// it is enabled, so by default a profile shows just the full-time read.
+export const INTENTS: IntentMeta[] = ADVISORY_LENS_ENABLED
+  ? [W2_INTENT, ADVISORY_INTENT]
+  : [W2_INTENT];

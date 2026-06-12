@@ -4,15 +4,65 @@ A small web app for sizing up a company. Type a **company** (optionally a websit
 or ticker to pin it), click **Research**, and the app searches the live web with
 Claude and returns a clean, sourced profile you can read (and print) — products,
 milestones (funding/IPO), controversies (breaches, lawsuits), 10-K/8-K highlights,
-regulatory filings (e.g. OCC), major customers, and **two Fit & Angle sections**
-that close the report — one for each lens: a full-time (W2) role and an advisory
-client for your practice. The facts stay the same across both; only the Fit &
-Angle reads differ, so you get every angle in a single profile with nothing to
-select up front.
+regulatory filings (e.g. OCC), major customers, and a **Fit & Angle** section that
+closes the report with how the company stacks up as a full-time role for *you*,
+tailored to the background you provide. (You can optionally turn on a second
+"advisory / consulting client" angle too — see *Make it your own* below.)
+
+**None of your personal details live in the code.** Your name, your background,
+and your API key are all things you plug in yourself, so it's easy to stand up
+your own copy without touching any files — see **[Make it your own](#make-it-your-own)**.
 
 Built with Next.js + TypeScript + Tailwind CSS, using the Anthropic API with the
 web search tool. The API key is read on the server only and is never exposed to
 the browser.
+
+---
+
+## Make it your own
+
+**No coding required.** You set up your own copy by filling in a short web form —
+your name, your API key, a password, and a few lines about your background. That's
+it. Everyone's copy uses their *own* key and their *own* details; nothing is shared.
+
+### The easy way — one click (recommended)
+
+1. Click this button:
+
+   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/notlindafry/companyprofiler&env=ANTHROPIC_API_KEY,APP_PASSWORD,NEXT_PUBLIC_OWNER_NAME,ABOUT_ME&envDescription=Your%20API%20key%2C%20a%20password%2C%20your%20name%2C%20and%20a%20short%20bio)
+
+2. Sign in with a free [Vercel](https://vercel.com) account (sign up with Google or
+   GitHub — no technical setup). It will make your own private copy of the project.
+3. Vercel shows a form asking for four values. Fill them in:
+
+   | Field | What to put |
+   | --- | --- |
+   | `ANTHROPIC_API_KEY` | Your own Anthropic key (see *Get an API key* below). |
+   | `APP_PASSWORD` | Any password you choose — you'll type it to open your site. |
+   | `NEXT_PUBLIC_OWNER_NAME` | Your first name (the title becomes "*Name*'s Company Profiler"). |
+   | `ABOUT_ME` | A few lines about you — your level, the kind of role you want, your field, and what makes a company a good fit. (You can paste a paragraph.) |
+
+4. Click **Deploy** and wait a minute. You'll get your own private web address.
+   Open it, type the password you chose, and start researching companies.
+
+> **Want to change your bio or name later?** In Vercel, open your project →
+> **Settings → Environment Variables**, edit the value, then **Redeploy**. You
+> never touch any code.
+
+### Get an Anthropic API key
+
+1. Go to <https://console.anthropic.com> and sign in (or create an account).
+2. Add a payment method under **Billing** — web search and model usage are paid.
+   A single profile typically costs a few cents.
+3. Open **Settings → API Keys → Create Key**. Copy the key (it starts with
+   `sk-ant-`). You won't be able to see it again, so keep it somewhere safe.
+
+> **Sharing this with a friend:** for the one-click button to work for someone
+> else, your GitHub repository needs to be **public** (their deploy uses *their*
+> key and *their* details — your key is never in the code, so nothing of yours
+> leaks). On GitHub: **Settings → General → Danger Zone → Change visibility →
+> Public**. Prefer to keep it private? Add them as a collaborator instead
+> (**Settings → Collaborators**), and they can use the same button.
 
 ---
 
@@ -21,8 +71,10 @@ the browser.
 - `app/page.tsx` — the home page (the form + results + "Print / Save as PDF").
 - `app/api/profile/route.ts` — the server route that calls Claude. Your API key
   is only ever used here, on the server.
-- `lib/config.ts` — **the one file you'll most likely edit.** It holds the model
-  name and the "About me" text used to tailor the *Fit & Angle* section.
+- `lib/config.ts` — settings and tuning: the offered models, cost/rate guards, and
+  how the personalization (your name, background, optional advisory lens) is read
+  from environment variables. You set the personal values as env vars (see *Make it
+  your own*), not by editing this file.
 - `lib/prompt.ts` — the research instructions sent to Claude.
 - `lib/schema.ts` — the single definition of the profile's shape (every section
   and field, with per-field guidance). The API enforces it, so the model must
@@ -47,12 +99,16 @@ the browser.
    ```
    npm install
    ```
-3. Create a file named `.env.local` in this folder (copy `.env.example`) and put
-   your key in it:
+3. Create a file named `.env.local` in this folder (copy `.env.example`) and fill
+   it in:
    ```
    ANTHROPIC_API_KEY=sk-ant-your-real-key-here
+   NEXT_PUBLIC_OWNER_NAME=YourFirstName
+   ABOUT_ME="A few lines about your background and the role you want."
    ```
-   This file is **gitignored**, so your key will never be committed.
+   This file is **gitignored**, so your key and details are never committed.
+   (`APP_PASSWORD` is optional locally; see *Privacy & access*. The advisory lens
+   variables are optional too — see *Changing things later*.)
 4. Start the app:
    ```
    npm run dev
@@ -68,10 +124,15 @@ the browser.
 3. Select this repository and click **Import**. Vercel auto-detects Next.js — you
    don't need to change the build settings.
 4. **Before deploying**, open **Settings → Environment Variables** and add:
-   - **Name:** `ANTHROPIC_API_KEY`
-   - **Value:** your `sk-ant-...` key
-   - Apply it to Production (and Preview if you like).
+   - `ANTHROPIC_API_KEY` — your `sk-ant-...` key
+   - `APP_PASSWORD` — a password you choose (required once it's live)
+   - `NEXT_PUBLIC_OWNER_NAME` — your first name
+   - `ABOUT_ME` — a few lines about your background
+   - Apply them to Production (and Preview if you like).
 5. Click **Deploy**. When it finishes, you'll get a public URL.
+
+> Most people don't need these manual steps — the **[Make it your own](#make-it-your-own)**
+> button at the top does all of this for you with a single click and a short form.
 
 > **Note on timing:** research usually takes a few minutes. The server route is
 > set to allow up to 600 seconds (`maxDuration` in `app/api/profile/route.ts`).
@@ -107,9 +168,16 @@ the browser.
   Sonnet 4.6 (faster, cheaper) or Opus 4.8 (most capable, most expensive). To
   add, remove, or swap the offered models (or change the default), edit
   `MODEL_OPTIONS` / `DEFAULT_MODEL_TIER` in `lib/config.ts`.
-- **Update your background** (for the *Fit & Angle* section): edit `ABOUT_ME` in
-  `lib/config.ts`. It feeds both lenses, so keep both your advisory practice
-  and your W2 criteria there.
+- **Update your background** (for the *Fit & Angle* section): change the `ABOUT_ME`
+  environment variable (Vercel → Settings → Environment Variables, or `.env.local`
+  locally), then redeploy. No code editing.
+- **Change the title:** set `NEXT_PUBLIC_OWNER_NAME` to your name (the header reads
+  "*Name*'s Company Profiler"). Leave it blank for a plain "Company Profiler".
+- **Turn on a second "advisory / consulting" angle:** set
+  `NEXT_PUBLIC_ENABLE_ADVISORY_LENS=true`. Each profile then closes with two reads —
+  one as a full-time role, one as a potential advisory/consulting client — instead
+  of just the full-time read. Optionally set `NEXT_PUBLIC_ADVISORY_NAME` to your
+  practice's name to label that section.
 - **Add / rename / reword the evaluation lenses:** edit `INTENTS` (section title
   and field labels) in `lib/schema.ts` and the matching per-lens guidance in
   `fitAndAngleGuidance` in `lib/prompt.ts`. Every profile renders one Fit & Angle

@@ -100,30 +100,53 @@ export const LOGIN_RATE_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 export const RESULT_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 // ---------------------------------------------------------------------------
-// "About me" — used ONLY to tailor the final "Fit & Angle" sections of each
-// profile. Edit this to match your own background. Every profile produces both
-// Fit & Angle lenses (W2 / advisory); this background feeds both,
-// so keep both the practice and the W2 criteria here.
+// Make it your own — personalization read from environment variables.
+//
+// None of your identity is baked into the code. Each deployment supplies its
+// own name, background, and (optional) advisory angle through environment
+// variables, so anyone can stand up their own copy WITHOUT editing any files —
+// see the README ("Make it your own") for the one-click setup. The values below
+// are only safe, generic fallbacks used when a variable is left unset.
 // ---------------------------------------------------------------------------
-export const ABOUT_ME = `
-- Level / domain: Director / Sr. Director / VP — GRC & Technology Risk. 12+ years.
-- Career arc: life-sciences compliance (McKesson, Exelixis, 2014-2019) -> Box
-  (2019-2024; built Risk & Resilience from scratch, ended as Director) -> Netflix
-  (2024-2025; Head of Tech Risk & Enterprise Resilience) -> Coinbase (2025-2026;
-  Director, Tech Risk).
-- Known for: building GRC functions that drive business decisions rather than
-  produce paperwork; quantitative risk (FAIR-grounded, built in-house tooling
-  instead of buying); AI-native operating models; embedding risk into engineering
-  planning rhythms; board reporting that drives engagement; people leadership.
-  Player-coach who writes runbooks, builds agents, and drafts decks alongside the team.
-- Now running Second Line Labs, a solo advisory practice: fractional / advisory
-  GRC & Technology Risk for tech-forward companies in regulated spaces — standing
-  up or maturing a second-line function, quantitative (FAIR) risk programs, board-
-  and regulator-ready reporting, and AI-native risk operating models. Engagements
-  are fractional, project, or advisory-seat — NOT a full-time W2 hire.
-- W2 criteria (only relevant if I were taking a full-time seat, which is not the
-  default lens): Director / Sr. Director / VP GRC or Tech Risk at $5B+ tech-forward
-  companies in regulated spaces — mature enough to need a real second-line mandate
-  and a team to lead (not a solo IC seat with a fancy title). Remote preferred;
-  hybrid OK in the Seattle area.
+
+// Your display name. Shown as "<name>'s Company Profiler" in the page header and
+// the browser tab. NEXT_PUBLIC_ so the browser UI can read it; falls back to a
+// generic title when unset.
+export const OWNER_NAME = (process.env.NEXT_PUBLIC_OWNER_NAME ?? "").trim();
+
+// The title shown in the header and the browser tab.
+export const APP_TITLE = OWNER_NAME
+  ? `${OWNER_NAME}'s Company Profiler`
+  : "Company Profiler";
+
+// Optional second lens. By default every profile evaluates a company through ONE
+// lens — a potential full-time role — which is what most job searches want. Set
+// NEXT_PUBLIC_ENABLE_ADVISORY_LENS to "true" to ALSO get a second "advisory /
+// consulting client" read on each company (useful if you also do fractional or
+// consulting work).
+export const ADVISORY_LENS_ENABLED =
+  (process.env.NEXT_PUBLIC_ENABLE_ADVISORY_LENS ?? "").trim().toLowerCase() ===
+  "true";
+
+// Optional name to show for the advisory lens (e.g. your practice's name, like
+// "Acme Advisory"). Only used when the advisory lens is enabled; falls back to
+// a generic "advisory / consulting" label when unset.
+export const ADVISORY_NAME = (process.env.NEXT_PUBLIC_ADVISORY_NAME ?? "").trim();
+
+// ---------------------------------------------------------------------------
+// "About me" — used ONLY to tailor the closing "Fit & Angle" section of each
+// profile to your background. It is read from the ABOUT_ME environment variable
+// (server-only — never sent to the browser), so your personal details stay out
+// of the code. Paste a short summary of yourself: your level / seniority, the
+// kind of role you want, your field or function, what makes a company a good
+// fit, and your location or remote preference.
+// ---------------------------------------------------------------------------
+const ABOUT_ME_FALLBACK = `
+- Set the ABOUT_ME environment variable to your own background to personalize
+  the "Fit & Angle" section.
+- Include: your level / seniority, the kind of role you're looking for, your
+  field or function, what makes a company a good fit for you, and your location
+  or remote preference.
 `.trim();
+
+export const ABOUT_ME = (process.env.ABOUT_ME ?? "").trim() || ABOUT_ME_FALLBACK;
