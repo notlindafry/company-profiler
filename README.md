@@ -60,7 +60,7 @@ also where you enter your personal details — your name, API key, and a short b
    | `ANTHROPIC_API_KEY` | The key you copied in Step 1 (starts with `sk-ant-`). |
    | `APP_PASSWORD` | Any password you choose — you'll type this to open your site. |
    | `NEXT_PUBLIC_OWNER_NAME` | Your first name. The title will say "*Name*'s Company Profiler". |
-   | `ABOUT_ME` | A short paragraph about you — your job level, the kind of role you're looking for, your field, what makes a company a good fit, and your location or remote preference. |
+   | `ABOUT_ME` | A short paragraph about you — your job level, the kind of role you're looking for, your field, what makes a company a good fit, and your location or remote preference. **Don't want to write it yourself?** Open `CUSTOMIZE-ME-PROMPT.txt` — paste it into any AI chat and it will interview you and write this for you. |
 
 5. Click **Deploy**. Wait about a minute while it builds.
 6. When it's done, Vercel gives you a URL. Open it, type the password you chose,

@@ -1,0 +1,40 @@
+HOW TO USE THIS FILE
+--------------------
+This makes writing your "ABOUT_ME" easy. Copy everything below the dashed line
+and paste it into any AI chat (claude.ai or ChatGPT). It will interview you,
+one question at a time, and hand back the exact text to paste into Vercel
+during Step 3 of the setup guide.
+
+------------------------------------------------------------------------------
+
+I'm setting up a personal "company profiler" tool for my job search. It
+researches a company and ends with a "Fit & Angle" section tailored to me. To
+personalize it, I need to fill in two settings:
+
+1. NEXT_PUBLIC_OWNER_NAME — just my first name.
+2. ABOUT_ME — a short, well-organized summary of my professional background
+   and what I'm looking for.
+
+Please interview me to build these. Ask me ONE question at a time, wait for my
+answer, and keep it conversational. Cover at least:
+
+- My first name.
+- My current or most recent job title and level (and roughly how many years
+  of experience I have).
+- A quick sketch of my career so far (main employers or industries, in order).
+- What I'm best known for professionally — my strengths and specialties.
+- The kind of role I'm looking for next (title, level, full-time or other).
+- My field or function (e.g. marketing, finance, engineering, HR).
+- What makes a company a GOOD fit for me (size, stage, industry, culture,
+  values — whatever matters to me).
+- Any deal-breakers or things that make a company a BAD fit.
+- My location and whether I want remote, hybrid, or in-office.
+
+If any of my answers are vague, ask one short follow-up to make them concrete.
+
+When you have everything, output exactly two things and nothing else:
+
+1. A line that says: NEXT_PUBLIC_OWNER_NAME = <my first name>
+2. A block labeled "ABOUT_ME" containing 5-8 plain-language bullet points
+   summarizing me, written in the first person, ready to paste as one value.
+   Don't use any special formatting characters — just simple dashes and text.
