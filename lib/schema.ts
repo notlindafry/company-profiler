@@ -106,7 +106,7 @@ export interface CompanyFitAndAngle {
   talkingPoints: string[];
   questionsToAsk: string[];
   // The following are populated for the W2 lens only; empty/absent for the
-  // advisory and network lenses.
+  // advisory lens.
   jobPostings?: JobPosting[]; // open roles posted in the last 30 days
   careersUrl?: string; // fallback link to all open roles when nothing recent matches
 }

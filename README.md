@@ -4,11 +4,11 @@ A small web app for sizing up a company. Type a **company** (optionally a websit
 or ticker to pin it), click **Research**, and the app searches the live web with
 Claude and returns a clean, sourced profile you can read (and print) — products,
 milestones (funding/IPO), controversies (breaches, lawsuits), 10-K/8-K highlights,
-regulatory filings (e.g. OCC), major customers, and **three Fit & Angle sections**
-that close the report — one for each lens: a full-time (W2) role, an advisory
-client for your practice, and a network relationship. The facts stay the same
-across all three; only the Fit & Angle reads differ, so you get every angle in a
-single profile with nothing to select up front.
+regulatory filings (e.g. OCC), major customers, and **two Fit & Angle sections**
+that close the report — one for each lens: a full-time (W2) role and an advisory
+client for your practice. The facts stay the same across both; only the Fit &
+Angle reads differ, so you get every angle in a single profile with nothing to
+select up front.
 
 Built with Next.js + TypeScript + Tailwind CSS, using the Anthropic API with the
 web search tool. The API key is read on the server only and is never exposed to
@@ -54,8 +54,9 @@ the browser.
    ```
    npm run dev
    ```
-5. Open <http://localhost:3000> in your browser. Type a name and company, click
-   **Research**, and wait 20–60 seconds.
+5. Open <http://localhost:3000> in your browser. Type a company (optionally a
+   website or ticker), click **Research**, and wait — a profile usually takes a
+   few minutes.
 
 ## Step 3 — Put it online with Vercel
 
@@ -69,11 +70,12 @@ the browser.
    - Apply it to Production (and Preview if you like).
 5. Click **Deploy**. When it finishes, you'll get a public URL.
 
-> **Note on timing:** research can take 20–60 seconds. The server route is set to
-> allow up to 300 seconds (`maxDuration` in `app/api/profile/route.ts`). Vercel's
-> free **Hobby** plan caps server functions at 60 seconds; if research is cut off,
-> upgrade the plan or lower how many searches Claude runs (`maxWebSearches` on each
-> tier in `MODEL_OPTIONS`, `lib/config.ts`), or pick the lighter Sonnet tier.
+> **Note on timing:** research usually takes a few minutes. The server route is
+> set to allow up to 600 seconds (`maxDuration` in `app/api/profile/route.ts`).
+> Vercel's free **Hobby** plan caps server functions at 60 seconds; if research is
+> cut off, upgrade the plan (and enable Fluid Compute) or lower how many searches
+> Claude runs (`maxWebSearches` on each tier in `MODEL_OPTIONS`, `lib/config.ts`),
+> or pick the lighter Sonnet tier.
 
 ---
 
@@ -103,7 +105,7 @@ the browser.
   add, remove, or swap the offered models (or change the default), edit
   `MODEL_OPTIONS` / `DEFAULT_MODEL_TIER` in `lib/config.ts`.
 - **Update your background** (for the *Fit & Angle* section): edit `ABOUT_ME` in
-  `lib/config.ts`. It feeds all three lenses, so keep both your advisory practice
+  `lib/config.ts`. It feeds both lenses, so keep both your advisory practice
   and your W2 criteria there.
 - **Add / rename / reword the evaluation lenses:** edit `INTENTS` (section title
   and field labels) in `lib/schema.ts` and the matching per-lens guidance in
@@ -116,7 +118,7 @@ the browser.
 ## A note on trust
 
 The app instructs Claude to source every factual claim with a link, to use only
-**public** LinkedIn information (never logging in or scraping), and to write
+**publicly available** information (never logging in or scraping), and to write
 "Not found" rather than guess. Anything uncertain is listed under
 **Unknowns / low-confidence**. Always click through the `[source]` links to
 verify anything important.

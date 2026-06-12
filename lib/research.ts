@@ -73,6 +73,10 @@ export async function researchCompany(
         model,
         max_tokens: 16000,
         output_config: { effort },
+        // Cache the prompt so continuation passes (which re-send the whole
+        // transcript, including all web-search results) bill the repeated
+        // prefix at ~10% of the normal input price instead of full price.
+        cache_control: { type: "ephemeral" },
         system,
         tools: [
           {
@@ -103,6 +107,9 @@ export async function researchCompany(
       content:
         'Stop researching now. Using only what you have already found, output the final JSON object in a ```json fence. Mark anything you could not confirm as "Not found", and put low-confidence items in "unknowns". Do not request any more tools.',
     });
+    // No cache_control here: this pass drops the tools list, and changing the
+    // tool set invalidates the prompt cache anyway — a marker would only add
+    // the cache-write surcharge with nothing ever reading it back.
     finalMessage = await client.messages
       .stream(
         {
