@@ -52,8 +52,10 @@ ${depthRule}
   "About me" background in your output; use the background ONLY to shape the
   judgments in the "fitAndAngle" section.
 
-Your final answer must be a single JSON object wrapped in a \`\`\`json code fence,
-matching the requested schema exactly, with NO other text after it.
+Your final answer is a single JSON object. Its shape is enforced by the
+structured output schema attached to the request; the schema's field
+descriptions carry per-field guidance — follow them. Use the exact string
+"Not found" for unknown string fields, and [] for sections with no findings.
 `.trim();
 }
 
@@ -74,132 +76,6 @@ Date and recency requirements:
   ${cutoffYear} or later) and prefer the most recent; disregard older results.
 - EXCEPTION: ${exceptions} Capture these accurately regardless of how far back
   they go.
-`.trim();
-}
-
-function companySchemaDescription(): string {
-  return `
-Return a JSON object with EXACTLY these fields (use "Not found" for unknown strings,
-and empty arrays [] for sections with no findings):
-
-{
-  "name": string,
-  "snapshot": {
-    "legalName": string,
-    "headquarters": string,
-    "founded": string,
-    "sector": string,
-    "employees": string,
-    "status": string,
-    "website": string
-  },
-  "overview": string,
-  "products": [
-    { "name": string, "description": string, "source": string }
-  ],
-  "milestones": [
-    { "date": string, "summary": string, "source": string }
-  ],
-  "execChanges": [
-    { "summary": string, "date": string, "source": string }
-  ],
-  "layoffs": [
-    { "summary": string, "date": string, "source": string }
-  ],
-  "controversies": [
-    { "type": "breach" | "lawsuit" | "regulatory" | "other", "summary": string, "date": string, "source": string }
-  ],
-  "secFilingsHighlights": [
-    { "filingType": string, "date": string, "highlight": string, "url": string }
-  ],
-  "riskFactors": [
-    { "category": string, "summary": string, "source": string }
-  ],
-  "regulatoryFilings": [
-    { "agency": string, "summary": string, "date": string, "url": string }
-  ],
-  "majorCustomers": [
-    { "name": string, "note": string, "source": string }
-  ],
-  "culture": {
-    "rtoPolicy": string,
-    "benefits": string,
-    "sentiment": string,
-    "workLifeBalance": string,
-    "generalNotes": string,
-    "source": string
-  },
-  "fitAndAngle": {
-    "w2": {
-      "temperature": "green" | "orange" | "red",
-      "temperatureNote": string,
-      "whyItCouldFitYou": [string],
-      "watchOuts": [string],
-      "talkingPoints": [string],
-      "questionsToAsk": [string],
-      "jobPostings": [
-        { "title": string, "location": string, "postedDate": string, "url": string, "note": string }
-      ],
-      "careersUrl": string
-    },
-    "advisory": {
-      "temperature": "green" | "orange" | "red",
-      "temperatureNote": string,
-      "whyItCouldFitYou": [string],
-      "watchOuts": [string],
-      "talkingPoints": [string],
-      "questionsToAsk": [string]
-    }
-  },
-  "unknowns": [string]
-}
-
-Notes on specific fields:
-- snapshot.status: whether public (with ticker), private, or a subsidiary.
-- overview: 2-4 plain-language sentences on what the company actually does.
-- products: their main products or service lines.
-- milestones: major events from roughly the LAST 3 YEARS, most recent first —
-  funding rounds (Series A/B/C...), IPO, large acquisitions, major launches,
-  leadership changes. (Founding and IPO dates may be older.)
-- execChanges: leadership changes, most recent first — C-suite (CEO/CFO/CISO/etc.)
-  and board appointments, departures, and promotions. Say who, the role, what
-  changed (stepped down / appointed / promoted), and the date. Capture changes
-  announced via press release. ACTIVELY search recent news; source each.
-- layoffs: reductions in force / layoffs over roughly the last few years, most
-  recent first — include the scale (headcount or %), the date, the stated reason
-  if given, and a source. ACTIVELY search recent news, especially the current year.
-- controversies: data breaches, lawsuits, enforcement actions, and major public
-  criticism — ACTIVELY search recent news, especially the current year. (Layoffs
-  and leadership changes have their own sections above — don't duplicate them
-  here.) Be factual and cite a source for each; do not editorialize.
-- secFilingsHighlights: notable items from 10-K (annual), 10-Q (quarterly), and
-  8-K (material events) filings. Use SEC EDGAR (sec.gov) and link to the filing.
-  If the company is private and does not file with the SEC, return [].
-- riskFactors: summarize the key risks the company itself discloses in the
-  "Risk Factors" section (Item 1A) of its most recent 10-K, plus any material
-  updates in the latest 10-Q. Capture the most significant ones across categories
-  (regulatory, legal, market/competitive, operational, financial, cybersecurity,
-  etc.), each in plain language with the filing as the source. If the company is
-  private / does not file with the SEC, return [].
-- regulatoryFilings: filings or actions with regulators relevant to the company's
-  industry — e.g. OCC, SEC, FINRA, FDA, state regulators — including new license
-  or charter applications. Include recent ones from the current year. Link to the source.
-- majorCustomers: notable named customers or partners, with a source each.
-- culture: a concise read on the company's culture as an employer, drawn from
-  public sources (company careers page, Glassdoor, Comparably, LinkedIn, news,
-  "best place to work" lists). Fill each field in plain language, citing a source:
-  * rtoPolicy: current return-to-office stance — fully remote, hybrid (note days
-    in office if stated), or office-first. Check the careers page and recent news.
-  * benefits: notable benefits and perks (health coverage, 401(k)/retirement
-    match, parental/family leave, PTO/unlimited PTO, equity, wellness, learning
-    budget, etc.).
-  * sentiment: overall employee sentiment — e.g. a Glassdoor/Comparably rating,
-    "best place to work" recognition, and recurring themes in recent reviews.
-  * workLifeBalance: assessment of hours, flexibility, and any burnout/crunch
-    signals from reviews or reporting.
-  * generalNotes: other cultural signals — stated values, DEI initiatives, team
-    vibe, turnover, or notable culture-related controversies.
-  Use "Not found" for any field you cannot source.
 `.trim();
 }
 
@@ -294,11 +170,11 @@ ${recencyGuidance(
   "the company's foundational history — its founding date and IPO date — is inherently older and must still be captured."
 )}
 
-${companySchemaDescription()}
-
-The factual sections above are objective and do NOT change based on lens.
-Only "fitAndAngle" is tailored to me, and it provides two independent assessments —
-one per lens — as described below. Do NOT steer the factual sections toward any lens.
+The profile's shape and per-field guidance come from the structured output
+schema attached to this request. The factual sections are objective and do NOT
+change based on lens. Only "fitAndAngle" is tailored to me, and it provides two
+independent assessments — one per lens — as described below. Do NOT steer the
+factual sections toward any lens.
 
 ${fitAndAngleGuidance()}
 
@@ -307,7 +183,6 @@ ${ABOUT_ME}
 
 Remember: use web_search throughout (including SEC EDGAR and regulator sites where
 relevant), source every fact, write "Not found" rather than guessing, and flag
-anything low-confidence in "unknowns". End with the single \`\`\`json object and
-nothing after it.
+anything low-confidence in "unknowns".
 `.trim();
 }

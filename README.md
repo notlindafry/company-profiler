@@ -24,6 +24,9 @@ the browser.
 - `lib/config.ts` — **the one file you'll most likely edit.** It holds the model
   name and the "About me" text used to tailor the *Fit & Angle* section.
 - `lib/prompt.ts` — the research instructions sent to Claude.
+- `lib/schema.ts` — the single definition of the profile's shape (every section
+  and field, with per-field guidance). The API enforces it, so the model must
+  return exactly this shape — add or change fields here.
 - `lib/research.ts` — the code that runs the web search and reads back the result.
 - `components/CompanyView.tsx` — how the profile is displayed.
 

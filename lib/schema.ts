@@ -1,121 +1,262 @@
-// The shape of a researched company profile. The API route validates that
-// Claude's output parses as JSON before sending it to the page.
+import { z } from "zod";
 
-export interface CompanySnapshot {
-  legalName: string;
-  headquarters: string;
-  founded: string;
-  sector: string; // industry / what space they operate in
-  employees: string; // approximate headcount
-  status: string; // e.g. "Public (NASDAQ: XYZ)", "Private", "Subsidiary of ..."
-  website: string;
-}
+// ---------------------------------------------------------------------------
+// THE single source of truth for the shape of a researched company profile.
+//
+// This Zod schema does three jobs at once:
+//   1. It is converted to a JSON schema and sent to the API as the structured-
+//      output format (see lib/research.ts), so the model is constrained to
+//      return exactly this shape — no hand-parsing JSON out of prose.
+//   2. The TypeScript types the UI renders against are inferred from it
+//      (z.infer, at the bottom), so types can never drift from the schema.
+//   3. It re-validates the parsed response at runtime before the UI sees it.
+//
+// The .describe() texts are sent to the model as part of the schema — they
+// carry the per-field research guidance that used to be duplicated as prose in
+// lib/prompt.ts. Behavioral instructions (search strategy, recency rules, lens
+// framing, "About me") still live in lib/prompt.ts.
+//
+// To add or change a field: edit it here, then render it in
+// components/CompanyView.tsx. Nothing else needs touching.
+// ---------------------------------------------------------------------------
 
-export interface CompanyProduct {
-  name: string;
-  description: string;
-  source?: string;
-}
+const SnapshotSchema = z.object({
+  legalName: z.string(),
+  headquarters: z.string(),
+  founded: z.string().describe("Founding date or year"),
+  sector: z.string().describe("Industry / what space they operate in"),
+  employees: z.string().describe("Approximate headcount"),
+  status: z
+    .string()
+    .describe(
+      'Whether public (with ticker, e.g. "Public (NASDAQ: XYZ)"), private, or a subsidiary of another company'
+    ),
+  website: z.string().describe("Official website URL"),
+});
 
-export interface CompanyMilestone {
-  date: string;
-  summary: string; // e.g. "Series C — $200M led by ...", "IPO on NASDAQ", "Acquired X"
-  source?: string;
-}
+const ProductSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  source: z.string().optional().describe("Source URL"),
+});
 
-export interface ExecChange {
-  summary: string; // e.g. "CEO Jane Doe stepped down; COO promoted to CEO", "Named new CISO ..."
-  date: string;
-  source?: string;
-}
+const MilestoneSchema = z.object({
+  date: z.string(),
+  summary: z
+    .string()
+    .describe('e.g. "Series C — $200M led by ...", "IPO on NASDAQ", "Acquired X"'),
+  source: z.string().optional().describe("Source URL"),
+});
 
-export interface Layoff {
-  summary: string; // e.g. "Cut ~20% of staff (~1,000 roles), citing ..."
-  date: string;
-  source?: string;
-}
+const ExecChangeSchema = z.object({
+  summary: z
+    .string()
+    .describe(
+      "Who, the role, and what changed (stepped down / appointed / promoted)"
+    ),
+  date: z.string(),
+  source: z.string().optional().describe("Source URL"),
+});
 
-export type ControversyType = "breach" | "lawsuit" | "regulatory" | "other";
+const LayoffSchema = z.object({
+  summary: z
+    .string()
+    .describe("Scale (headcount or %) and the stated reason if given"),
+  date: z.string(),
+  source: z.string().optional().describe("Source URL"),
+});
 
-export interface CompanyControversy {
-  type: ControversyType;
-  summary: string;
-  date: string;
-  source?: string;
-}
+const CONTROVERSY_TYPES = ["breach", "lawsuit", "regulatory", "other"] as const;
 
-export interface SecFilingHighlight {
-  filingType: string; // e.g. "10-K", "8-K", "10-Q", "S-1"
-  date: string;
-  highlight: string;
-  url: string;
-}
+const ControversySchema = z.object({
+  type: z.enum(CONTROVERSY_TYPES),
+  summary: z.string(),
+  date: z.string(),
+  source: z.string().optional().describe("Source URL"),
+});
 
-export interface RiskFactor {
-  category: string; // e.g. "Regulatory", "Legal", "Market", "Operational", "Cybersecurity"
-  summary: string; // the disclosed risk, summarized in plain language
-  source: string; // link to the 10-K / 10-Q it came from
-}
+const SecFilingHighlightSchema = z.object({
+  filingType: z.string().describe('e.g. "10-K", "10-Q", "8-K", "S-1"'),
+  date: z.string(),
+  highlight: z.string(),
+  url: z.string().describe("Link to the filing on SEC EDGAR (sec.gov)"),
+});
 
-export interface RegulatoryFiling {
-  agency: string; // e.g. "OCC", "SEC", "FINRA", "state regulator"
-  summary: string; // e.g. "Applied for national bank charter"
-  date: string;
-  url: string;
-}
+const RiskFactorSchema = z.object({
+  category: z
+    .string()
+    .describe('e.g. "Regulatory", "Legal", "Market", "Operational", "Cybersecurity"'),
+  summary: z.string().describe("The disclosed risk, summarized in plain language"),
+  source: z.string().describe("Link to the 10-K / 10-Q it came from"),
+});
 
-export interface MajorCustomer {
-  name: string;
-  note: string;
-  source?: string;
-}
+const RegulatoryFilingSchema = z.object({
+  agency: z
+    .string()
+    .describe('e.g. "OCC", "SEC", "FINRA", "FDA", or a state regulator'),
+  summary: z.string().describe('e.g. "Applied for national bank charter"'),
+  date: z.string(),
+  url: z.string().describe("Source URL"),
+});
 
-export interface CompanyCulture {
-  rtoPolicy: string; // return-to-office stance, e.g. "Fully remote", "Hybrid — 3 days/week in office", "Office-first"
-  benefits: string; // notable benefits & perks, e.g. health, 401(k) match, parental leave, equity, PTO
-  sentiment: string; // overall employee sentiment, e.g. Glassdoor rating, "best place to work" awards, review themes
-  workLifeBalance: string; // assessment of hours, flexibility, burnout/crunch signals
-  generalNotes: string; // values, DEI, team vibe, turnover, or other cultural notes
-  source?: string;
-}
+const MajorCustomerSchema = z.object({
+  name: z.string(),
+  note: z.string(),
+  source: z.string().optional().describe("Source URL"),
+});
 
-// An open role found via live web search, used only by the W2 lens. Each entry
-// must carry a verified link to the specific posting.
-export interface JobPosting {
-  title: string;
-  location: string; // e.g. "San Francisco, CA", "Remote (US)"
-  postedDate: string; // when the role was posted; within the last 30 days
-  url: string; // verified direct link to the specific posting
-  note?: string; // one line on why it could be a fit
-}
+const CultureSchema = z.object({
+  rtoPolicy: z
+    .string()
+    .describe(
+      "Current return-to-office stance — fully remote, hybrid (note days in office if stated), or office-first. Check the careers page and recent news."
+    ),
+  benefits: z
+    .string()
+    .describe(
+      "Notable benefits and perks — health coverage, 401(k)/retirement match, parental/family leave, PTO, equity, wellness, learning budget, etc. One string, not a list."
+    ),
+  sentiment: z
+    .string()
+    .describe(
+      'Overall employee sentiment — e.g. a Glassdoor/Comparably rating, "best place to work" recognition, and recurring themes in recent reviews'
+    ),
+  workLifeBalance: z
+    .string()
+    .describe(
+      "Hours, flexibility, and any burnout/crunch signals from reviews or reporting"
+    ),
+  generalNotes: z
+    .string()
+    .describe(
+      "Other cultural signals — stated values, DEI initiatives, team vibe, turnover, or notable culture-related controversies"
+    ),
+  source: z.string().optional().describe("Source URL"),
+});
 
-// A traffic-light read on how strong this lens's fit is, given the analysis and
-// my needs:
-//   green  — good fit for this angle
-//   orange — mixed / unclear
-//   red    — poor fit for this angle
-export type FitTemperature = "green" | "orange" | "red";
+const FIT_TEMPERATURES = ["green", "orange", "red"] as const;
 
-export interface CompanyFitAndAngle {
-  // Overall strength of THIS lens's relationship, plus a one-line rationale.
-  // Optional so a malformed/missing rating degrades gracefully in the UI.
-  temperature?: FitTemperature;
-  temperatureNote?: string;
-  whyItCouldFitYou: string[];
-  watchOuts: string[];
-  talkingPoints: string[];
-  questionsToAsk: string[];
-  // The following are populated for the W2 lens only; empty/absent for the
-  // advisory lens.
-  jobPostings?: JobPosting[]; // open roles posted in the last 30 days
-  careersUrl?: string; // fallback link to all open roles when nothing recent matches
-}
+const JobPostingSchema = z.object({
+  title: z.string().describe("Exact posting title"),
+  location: z.string().describe('City/region or "Remote"'),
+  postedDate: z
+    .string()
+    .describe("When the role was posted — must be within the last 30 days"),
+  url: z
+    .string()
+    .describe(
+      "VERIFIED direct link to this specific posting — omit the posting entirely if the link cannot be verified"
+    ),
+  note: z.string().optional().describe("One line on why it could fit"),
+});
 
-// The two lenses every profile is evaluated through. These reshape only the
-// closing "Fit & Angle" sections — the factual sections stay objective. Every
-// profile now includes both; there is no selection to make.
+const FitAndAngleSchema = z.object({
+  temperature: z
+    .enum(FIT_TEMPERATURES)
+    .describe(
+      "Traffic-light verdict on this lens: green = good fit, orange = mixed/unclear, red = poor fit"
+    ),
+  temperatureNote: z
+    .string()
+    .describe("One short sentence (roughly 10-20 words) on why this color"),
+  whyItCouldFitYou: z.array(z.string()),
+  watchOuts: z.array(z.string()),
+  talkingPoints: z.array(z.string()),
+  questionsToAsk: z.array(z.string()),
+  jobPostings: z
+    .array(JobPostingSchema)
+    .optional()
+    .describe(
+      "W2 lens only: currently open roles posted in the last 30 days (omit for the advisory lens)"
+    ),
+  careersUrl: z
+    .string()
+    .optional()
+    .describe("W2 lens only: the company's main careers / open-roles page"),
+});
+
+export const CompanyProfileSchema = z.object({
+  name: z.string(),
+  snapshot: SnapshotSchema,
+  overview: z
+    .string()
+    .describe("2-4 plain-language sentences on what the company actually does"),
+  products: z.array(ProductSchema).describe("Main products or service lines"),
+  milestones: z
+    .array(MilestoneSchema)
+    .describe(
+      "Major events from roughly the LAST 3 YEARS, most recent first — funding rounds (Series A/B/C...), IPO, large acquisitions, major launches. (Founding and IPO dates may be older.)"
+    ),
+  execChanges: z
+    .array(ExecChangeSchema)
+    .describe(
+      "Leadership changes, most recent first — C-suite (CEO/CFO/CISO/etc.) and board appointments, departures, and promotions, including changes announced via press release. ACTIVELY search recent news; source each."
+    ),
+  layoffs: z
+    .array(LayoffSchema)
+    .describe(
+      "Reductions in force / layoffs over roughly the last few years, most recent first. ACTIVELY search recent news, especially the current year."
+    ),
+  controversies: z
+    .array(ControversySchema)
+    .describe(
+      "Data breaches, lawsuits, enforcement actions, and major public criticism — ACTIVELY search recent news, especially the current year. Layoffs and leadership changes have their own sections above — don't duplicate them here. Be factual and cite a source for each; do not editorialize."
+    ),
+  secFilingsHighlights: z
+    .array(SecFilingHighlightSchema)
+    .describe(
+      "Notable items from 10-K (annual), 10-Q (quarterly), and 8-K (material events) filings. Use SEC EDGAR (sec.gov) and link to the filing. If the company is private and does not file with the SEC, return []."
+    ),
+  riskFactors: z
+    .array(RiskFactorSchema)
+    .describe(
+      'Key risks the company itself discloses in the "Risk Factors" section (Item 1A) of its most recent 10-K, plus any material updates in the latest 10-Q — the most significant ones across categories, each in plain language with the filing as the source. If the company is private / does not file with the SEC, return [].'
+    ),
+  regulatoryFilings: z
+    .array(RegulatoryFilingSchema)
+    .describe(
+      "Filings or actions with regulators relevant to the company's industry, including new license or charter applications. Include recent ones from the current year. Link to the source."
+    ),
+  majorCustomers: z
+    .array(MajorCustomerSchema)
+    .describe("Notable named customers or partners, with a source each"),
+  culture: CultureSchema.describe(
+    'A concise read on the company as an employer, drawn from public sources (careers page, Glassdoor, Comparably, LinkedIn, news, "best place to work" lists). Use "Not found" for any field you cannot source.'
+  ),
+  fitAndAngle: z
+    .object({
+      w2: FitAndAngleSchema,
+      advisory: FitAndAngleSchema,
+    })
+    .describe(
+      "Two independent assessments — one per lens — following the per-lens instructions in the user message"
+    ),
+  unknowns: z
+    .array(z.string())
+    .describe("Anything you are unsure about or could not confirm"),
+});
+
+// ---------------------------------------------------------------------------
+// TypeScript types — inferred from the schema above, so they can never drift.
+// ---------------------------------------------------------------------------
+
+export type CompanyProfile = z.infer<typeof CompanyProfileSchema>;
+export type CompanySnapshot = z.infer<typeof SnapshotSchema>;
+export type CompanyCulture = z.infer<typeof CultureSchema>;
+export type CompanyFitAndAngle = z.infer<typeof FitAndAngleSchema>;
+export type JobPosting = z.infer<typeof JobPostingSchema>;
+export type FitAndAngleByIntent = CompanyProfile["fitAndAngle"];
+export type FitTemperature = (typeof FIT_TEMPERATURES)[number];
+export type ControversyType = (typeof CONTROVERSY_TYPES)[number];
+
+// ---------------------------------------------------------------------------
+// UI metadata for the two evaluation lenses. These reshape only the closing
+// "Fit & Angle" sections — the factual sections stay objective. Every profile
+// includes both; there is no selection to make.
 //   w2       — a potential full-time role for me
 //   advisory — a potential advisory client for Second Line Labs (my practice)
+// ---------------------------------------------------------------------------
+
 export type ProfileIntent = "w2" | "advisory";
 
 export interface IntentMeta {
@@ -152,24 +293,3 @@ export const INTENTS: IntentMeta[] = [
     },
   },
 ];
-
-// One Fit & Angle assessment per lens, keyed by intent.
-export type FitAndAngleByIntent = { w2: CompanyFitAndAngle; advisory: CompanyFitAndAngle };
-
-export interface CompanyProfile {
-  name: string;
-  snapshot: CompanySnapshot;
-  overview: string; // plain-language description of what they do
-  products: CompanyProduct[];
-  milestones: CompanyMilestone[];
-  execChanges: ExecChange[];
-  layoffs: Layoff[];
-  controversies: CompanyControversy[];
-  secFilingsHighlights: SecFilingHighlight[];
-  riskFactors: RiskFactor[];
-  regulatoryFilings: RegulatoryFiling[];
-  majorCustomers: MajorCustomer[];
-  culture: CompanyCulture;
-  fitAndAngle: FitAndAngleByIntent;
-  unknowns: string[];
-}

@@ -1,27 +1,19 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import {
   DEFAULT_MODEL_TIER,
   RESULT_CACHE_TTL_MS,
   resolveModel,
 } from "./config";
 import { buildSystemPrompt, buildCompanyPrompt } from "./prompt";
-import { normalizeProfile } from "./normalize";
+import { sanitizeProfile } from "./sanitize";
 import { cacheGet, cacheSet } from "./cache";
-import type { CompanyProfile } from "./schema";
+import { CompanyProfileSchema, type CompanyProfile } from "./schema";
 
-// Pull the JSON object out of Claude's final answer. We instruct the model to
-// wrap it in a ```json fence; we take the LAST fenced block (the final answer),
-// and fall back to the outermost { ... } if no fence is present.
-function extractJson(text: string): string {
-  const fences = [...text.matchAll(/```(?:json)?\s*([\s\S]*?)```/gi)];
-  const candidate = fences.length ? fences[fences.length - 1][1] : text;
-  const start = candidate.indexOf("{");
-  const end = candidate.lastIndexOf("}");
-  if (start === -1 || end === -1 || end < start) {
-    throw new Error("Could not find a JSON object in the model's response.");
-  }
-  return candidate.slice(start, end + 1);
-}
+// Structured-output format derived from the one Zod schema. Sent with every
+// request so the API constrains the model's final answer to exactly this
+// shape — no fences, no prose, guaranteed-parseable JSON.
+const PROFILE_FORMAT = zodOutputFormat(CompanyProfileSchema);
 
 // The model is part of the key: a profile produced by Sonnet must not be served
 // for an Opus request (or vice versa), since the chosen model is the whole point.
@@ -72,7 +64,7 @@ export async function researchCompany(
       {
         model,
         max_tokens: 16000,
-        output_config: { effort },
+        output_config: { effort, format: PROFILE_FORMAT },
         // Cache the prompt so continuation passes (which re-send the whole
         // transcript, including all web-search results) bill the repeated
         // prefix at ~10% of the normal input price instead of full price.
@@ -105,7 +97,7 @@ export async function researchCompany(
     messages.push({
       role: "user",
       content:
-        'Stop researching now. Using only what you have already found, output the final JSON object in a ```json fence. Mark anything you could not confirm as "Not found", and put low-confidence items in "unknowns". Do not request any more tools.',
+        'Stop researching now. Using only what you have already found, output the final profile. Mark anything you could not confirm as "Not found", and put low-confidence items in "unknowns". Do not request any more tools.',
     });
     // No cache_control here: this pass drops the tools list, and changing the
     // tool set invalidates the prompt cache anyway — a marker would only add
@@ -115,7 +107,7 @@ export async function researchCompany(
         {
           model,
           max_tokens: 16000,
-          output_config: { effort },
+          output_config: { effort, format: PROFILE_FORMAT },
           system,
           messages,
         },
@@ -134,6 +126,15 @@ export async function researchCompany(
     );
   }
 
+  // Output hit the max_tokens ceiling — the JSON is cut off mid-object, so
+  // fail with a clear message instead of a confusing parse error.
+  if (finalMessage.stop_reason === "max_tokens") {
+    throw new Error(
+      "The profile was cut off before it finished. Please try again."
+    );
+  }
+
+  // With structured outputs, the final text IS the JSON object — no fences.
   const fullText = finalMessage.content
     .filter((block): block is Anthropic.TextBlock => block.type === "text")
     .map((block) => block.text)
@@ -143,17 +144,26 @@ export async function researchCompany(
     throw new Error("The model returned no readable text.");
   }
 
-  const json = extractJson(fullText);
-
   let parsed: unknown;
   try {
-    parsed = JSON.parse(json);
+    parsed = JSON.parse(fullText);
   } catch {
-    throw new Error("The model's response was not valid JSON.");
+    throw new Error("The model's response was not valid JSON. Please try again.");
   }
 
-  // Coerce the model's output into a guaranteed-safe shape before returning.
-  const profile = normalizeProfile(parsed);
+  // The API already constrains the output to CompanyProfileSchema; this
+  // re-validation is a cheap belt-and-suspenders check so everything after
+  // this line can trust the shape completely.
+  const validated = CompanyProfileSchema.safeParse(parsed);
+  if (!validated.success) {
+    throw new Error(
+      "The model's response did not match the expected profile format. Please try again."
+    );
+  }
+
+  // The schema can't enforce link safety — strip non-http(s) URLs and junk
+  // entries before the UI renders anything.
+  const profile = sanitizeProfile(validated.data);
   cacheSet(key, profile, RESULT_CACHE_TTL_MS);
   return profile;
 }
