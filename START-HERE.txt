@@ -1,0 +1,22 @@
+Welcome! This is a small tool that researches any company on the live web and
+gives you a clean, sourced profile to help with your job search — products, news,
+controversies, culture, open roles, and a tailored "is this a good fit for me?"
+read based on the background you provide.
+
+You do NOT need to know how to code to use it.
+
+HOW TO SET UP YOUR OWN COPY
+---------------------------
+Open the file named "README.md" and follow the section titled
+"Make it your own". It walks you through three short steps, all in your web
+browser (about 15 minutes the first time):
+
+  1. Get your own Anthropic API key (this is what pays for the research).
+  2. Put these files into your own free GitHub account.
+  3. Put it online with Vercel and type in your name + a short bio.
+
+That's it. Everything personal — your key, your name, your background — is
+something you type into a simple web form. None of it is in the files.
+
+Tip: you can read README.md nicely formatted by opening this folder on
+github.com after step 2, or in any text editor.

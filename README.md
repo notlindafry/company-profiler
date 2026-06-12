@@ -25,44 +25,50 @@ the browser.
 your name, your API key, a password, and a few lines about your background. That's
 it. Everyone's copy uses their *own* key and their *own* details; nothing is shared.
 
-### The easy way — one click (recommended)
+You'll do this in three short stages, all in a web browser — no terminal, no
+coding. Budget about 15 minutes the first time.
 
-1. Click this button:
+### Stage 1 — Get an Anthropic API key (your "token")
 
-   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/notlindafry/companyprofiler&env=ANTHROPIC_API_KEY,APP_PASSWORD,NEXT_PUBLIC_OWNER_NAME,ABOUT_ME&envDescription=Your%20API%20key%2C%20a%20password%2C%20your%20name%2C%20and%20a%20short%20bio)
+1. Go to <https://console.anthropic.com> and sign in (or create a free account).
+2. Add a payment method under **Billing** — web search and model usage are paid.
+   A single profile typically costs only a few cents.
+3. Open **Settings → API Keys → Create Key**. Copy the key (it starts with
+   `sk-ant-`). You won't be able to see it again, so paste it somewhere safe for now.
 
-2. Sign in with a free [Vercel](https://vercel.com) account (sign up with Google or
-   GitHub — no technical setup). It will make your own private copy of the project.
-3. Vercel shows a form asking for four values. Fill them in:
+### Stage 2 — Put these files in your own GitHub account
 
-   | Field | What to put |
+1. Create a free account at <https://github.com> if you don't have one.
+2. Click the **+** at the top-right → **New repository**. Give it any name
+   (e.g. `company-profiler`), leave everything else as-is, and click
+   **Create repository**.
+3. On the new empty repository's page, click **uploading an existing file**
+   (the link in the "…or upload" line). Drag **all the files and folders from
+   this project** into the page, then click **Commit changes**.
+
+That's now *your* private copy. Nothing here contains anyone else's key or info.
+
+### Stage 3 — Put it online with Vercel and fill in your details
+
+1. Go to <https://vercel.com> and **Sign up** with your GitHub account (free).
+2. Click **Add New → Project**, find the repository you just created, and click
+   **Import**. Vercel auto-detects everything — don't change the build settings.
+3. Open the **Environment Variables** section and add these four (type the name on
+   the left, paste the value on the right, click **Add** after each):
+
+   | Name | Value to put |
    | --- | --- |
-   | `ANTHROPIC_API_KEY` | Your own Anthropic key (see *Get an API key* below). |
+   | `ANTHROPIC_API_KEY` | Your own key from Stage 1 (starts with `sk-ant-`). |
    | `APP_PASSWORD` | Any password you choose — you'll type it to open your site. |
    | `NEXT_PUBLIC_OWNER_NAME` | Your first name (the title becomes "*Name*'s Company Profiler"). |
-   | `ABOUT_ME` | A few lines about you — your level, the kind of role you want, your field, and what makes a company a good fit. (You can paste a paragraph.) |
+   | `ABOUT_ME` | A few lines about you — your level/seniority, the kind of role you want, your field, and what makes a company a good fit. (You can paste a short paragraph.) |
 
 4. Click **Deploy** and wait a minute. You'll get your own private web address.
    Open it, type the password you chose, and start researching companies.
 
-> **Want to change your bio or name later?** In Vercel, open your project →
-> **Settings → Environment Variables**, edit the value, then **Redeploy**. You
-> never touch any code.
-
-### Get an Anthropic API key
-
-1. Go to <https://console.anthropic.com> and sign in (or create an account).
-2. Add a payment method under **Billing** — web search and model usage are paid.
-   A single profile typically costs a few cents.
-3. Open **Settings → API Keys → Create Key**. Copy the key (it starts with
-   `sk-ant-`). You won't be able to see it again, so keep it somewhere safe.
-
-> **Sharing this with a friend:** for the one-click button to work for someone
-> else, your GitHub repository needs to be **public** (their deploy uses *their*
-> key and *their* details — your key is never in the code, so nothing of yours
-> leaks). On GitHub: **Settings → General → Danger Zone → Change visibility →
-> Public**. Prefer to keep it private? Add them as a collaborator instead
-> (**Settings → Collaborators**), and they can use the same button.
+> **Want to change your name or background later?** In Vercel, open your project →
+> **Settings → Environment Variables**, edit the value, then **Deployments →
+> Redeploy**. You never touch any code.
 
 ---
 
@@ -131,8 +137,9 @@ it. Everyone's copy uses their *own* key and their *own* details; nothing is sha
    - Apply them to Production (and Preview if you like).
 5. Click **Deploy**. When it finishes, you'll get a public URL.
 
-> Most people don't need these manual steps — the **[Make it your own](#make-it-your-own)**
-> button at the top does all of this for you with a single click and a short form.
+> Not a developer? You don't need this section — follow
+> **[Make it your own](#make-it-your-own)** at the top instead; it's the same thing
+> in plain language, all in the browser.
 
 > **Note on timing:** research usually takes a few minutes. The server route is
 > set to allow up to 600 seconds (`maxDuration` in `app/api/profile/route.ts`).
