@@ -22,22 +22,20 @@ it like an account) so the searches run on your dime, not anyone else's.
 
 ---
 
-## Step 2 — Put these files in your own GitHub account
+## Step 2 — Make your own copy on GitHub
 
-GitHub is a free website for storing code files. You need your own account so your
-copy of the tool lives in *your* space, not someone else's.
+GitHub is a free website that stores the tool's files. You'll make your own copy
+of this template with one click, so it lives in *your* account.
 
-1. Create a free account at **github.com** (sign up with your email).
-2. Once logged in, click the **+** icon at the top-right of the page and choose
-   **New repository**.
-3. Give it any name (e.g. `company-profiler`). Leave all other settings as-is and
-   click **Create repository**.
-4. On the next page, look for the line that says *"…or upload an existing file"* and
-   click **uploading an existing file**.
-5. Drag all the files and folders from the zip you were sent into the upload area,
-   then click **Commit changes**.
+1. Create a free account at **github.com** if you don't have one (sign up with
+   your email).
+2. Go to the template page: **https://github.com/notlindafry/companyprofiler-template**
+3. Click the green **"Use this template"** button near the top-right, then choose
+   **Create a new repository**.
+4. Give it any name (e.g. `company-profiler`), make sure it's set to **Private** or
+   **Public** (either is fine), and click **Create repository**.
 
-Your copy is now saved in your own GitHub account.
+GitHub instantly makes your own clean copy. (No downloading or uploading files.)
 
 ---
 
@@ -47,9 +45,9 @@ Vercel is a free service that turns your GitHub files into a live website. This 
 also where you enter your personal details — your name, API key, and a short bio.
 
 1. Go to **vercel.com** and click **Sign Up**. Choose **Continue with GitHub** so
-   it connects to the account you just created.
+   it connects to the account you just used.
 2. Once in, click **Add New → Project**. Find the repository you created in Step 2
-   and click **Import**.
+   (the copy named e.g. `company-profiler`) and click **Import**.
 3. Vercel auto-detects everything — **don't change any build settings**.
 4. Scroll down to the **Environment Variables** section. You'll add four variables
    here. For each one: type the name in the left box, paste the value in the right
