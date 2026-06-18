@@ -32,12 +32,24 @@ const GLOBAL_KEY = "profile:__global__";
 // Returns a safe, user-facing message. Full error details are logged
 // server-side by the caller; we deliberately avoid echoing provider internals
 // (raw API error bodies) back to the client.
+//
+// TEMP DIAGNOSTIC: while we pin down a persistent 4xx, append the API error's
+// status, type, and a truncated message to the user-facing string so the real
+// cause shows up in the app's error banner. This app is password-gated to a
+// single user, so surfacing it here is acceptable for debugging. Revert to the
+// plain messages (drop `diag` and the suffixes) once the cause is identified.
 function describeError(err: unknown): string {
   if (err instanceof Anthropic.APIError) {
     const status = err.status ?? 0;
-    if (status === 429) return "The research provider is rate limiting requests. Please try again shortly.";
-    if (status >= 500) return "The research provider had a temporary error. Please try again.";
-    return "The research request could not be completed. Please try again.";
+    const type = (err as { type?: string | null }).type ?? "unknown_type";
+    const raw = err instanceof Error && err.message ? err.message : "";
+    const detail = raw ? ` — ${raw.slice(0, 300)}` : "";
+    const diag = ` [diagnostic: ${status} ${type}${detail}]`;
+    if (status === 429)
+      return "The research provider is rate limiting requests. Please try again shortly." + diag;
+    if (status >= 500)
+      return "The research provider had a temporary error. Please try again." + diag;
+    return "The research request could not be completed. Please try again." + diag;
   }
   // Our own thrown errors carry intentionally user-safe messages.
   if (err instanceof Error && err.message) return err.message;
