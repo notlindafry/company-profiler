@@ -18,10 +18,10 @@
     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
   /* --- the five palette colors (shared house theme, screen default) --- */
-  --bg: #0f120d; /* page background (deepest near-black green) */
-  --surface: #1d231c; /* cards, panels, inputs, chips */
-  --accent: #7d9b83; /* interactive: active state, focus ring, links */
-  --text: #e6e4db; /* primary body text */
+  --bg: #1b1f1d; /* page background: dark green */
+  --surface: #242a26; /* cards, panels, inputs, chips (lifted off the bg) */
+  --accent: #4e9d68; /* interactive: brighter green — active state, focus ring, links */
+  --text: #f2ecda; /* primary body text (cream) */
   --text-strong: #ffffff; /* headings, emphasis */
 
   /* --- derived from the palette via color-mix() — no new hues --- */
