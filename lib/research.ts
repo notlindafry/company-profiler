@@ -54,71 +54,76 @@ export async function researchCompany(
     { role: "user", content: buildCompanyPrompt(company, detail) },
   ];
 
-  let finalMessage: Anthropic.Message | undefined;
-
-  // Bounded search phase (2 passes). We use the direct web_search_20250305 tool
-  // (no code-execution "dynamic filtering"), which is much faster per search;
-  // effort and the per-pass search budget come from the selected model tier.
+  // --- Search phase (up to 2 passes) ---
+  // The web_search tool always attaches citations to the model's answer, and
+  // citations are incompatible with structured outputs (output_config.format):
+  // sending both in one request makes the API reject it with a 400. So the
+  // search passes run the tool WITHOUT a format, and the tool-free finalization
+  // pass below is the one that emits the constrained JSON.
+  //
+  // We use the direct web_search_20250305 tool (no code-execution "dynamic
+  // filtering"), which is much faster per search; effort and the per-pass search
+  // budget come from the selected model tier.
   for (let attempt = 0; attempt < 2; attempt++) {
-    const stream = client.messages.stream(
-      {
-        model,
-        max_tokens: 16000,
-        output_config: { effort, format: PROFILE_FORMAT },
-        // Cache the prompt so continuation passes (which re-send the whole
-        // transcript, including all web-search results) bill the repeated
-        // prefix at ~10% of the normal input price instead of full price.
-        cache_control: { type: "ephemeral" },
-        system,
-        tools: [
-          {
-            type: "web_search_20250305",
-            name: "web_search",
-            max_uses: maxWebSearches,
-          },
-        ],
-        messages,
-      },
-      requestOptions
-    );
-
-    finalMessage = await stream.finalMessage();
-
-    if (finalMessage.stop_reason === "pause_turn") {
-      messages.push({ role: "assistant", content: finalMessage.content });
-      continue;
-    }
-    break;
-  }
-
-  // Still wants to search? Force a final answer with NO tools, so the model must
-  // write the profile from what it already gathered (gaps -> "Not found").
-  if (finalMessage && finalMessage.stop_reason === "pause_turn") {
-    messages.push({
-      role: "user",
-      content:
-        'Stop researching now. Using only what you have already found, output the final profile. Mark anything you could not confirm as "Not found", and put low-confidence items in "unknowns". Do not request any more tools.',
-    });
-    // No cache_control here: this pass drops the tools list, and changing the
-    // tool set invalidates the prompt cache anyway — a marker would only add
-    // the cache-write surcharge with nothing ever reading it back.
-    finalMessage = await client.messages
+    const searchMessage = await client.messages
       .stream(
         {
           model,
           max_tokens: 16000,
-          output_config: { effort, format: PROFILE_FORMAT },
+          output_config: { effort },
+          // Cache the prompt so continuation passes (which re-send the whole
+          // transcript, including all web-search results) bill the repeated
+          // prefix at ~10% of the normal input price instead of full price.
+          cache_control: { type: "ephemeral" },
           system,
+          tools: [
+            {
+              type: "web_search_20250305",
+              name: "web_search",
+              max_uses: maxWebSearches,
+            },
+          ],
           messages,
         },
         requestOptions
       )
       .finalMessage();
+
+    // Keep the research (the model's notes plus the web-search results) in the
+    // transcript so the finalization pass can write the profile from it.
+    messages.push({ role: "assistant", content: searchMessage.content });
+
+    // pause_turn = the model wants to keep searching; loop and let it continue.
+    // Anything else (end_turn, refusal, max_tokens) ends the search phase.
+    if (searchMessage.stop_reason !== "pause_turn") break;
   }
 
-  if (!finalMessage) {
-    throw new Error("No response from the model.");
-  }
+  // --- Finalization pass ---
+  // NO tools (so no citations) + structured output, which constrains the answer
+  // to exactly CompanyProfileSchema. This always runs: the search passes can't
+  // carry a format, so this pass is what produces the guaranteed-parseable JSON
+  // (gaps the model couldn't fill become "Not found").
+  messages.push({
+    role: "user",
+    content:
+      'Stop researching now. Using only what you have already found, output the final profile. Mark anything you could not confirm as "Not found", and put low-confidence items in "unknowns". Do not request any more tools.',
+  });
+
+  // No cache_control here: this pass drops the tools list and adds a format, both
+  // of which invalidate the prompt cache anyway — a marker would only add the
+  // cache-write surcharge with nothing ever reading it back.
+  const finalMessage = await client.messages
+    .stream(
+      {
+        model,
+        max_tokens: 16000,
+        output_config: { effort, format: PROFILE_FORMAT },
+        system,
+        messages,
+      },
+      requestOptions
+    )
+    .finalMessage();
 
   if (finalMessage.stop_reason === "refusal") {
     throw new Error(
