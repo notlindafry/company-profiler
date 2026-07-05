@@ -54,7 +54,7 @@ export default function PasswordGate() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-3 w-full rounded-lg bg-[var(--accent)] px-4 py-2 font-medium text-white shadow-sm transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-3 w-full rounded-lg bg-[var(--accent)] px-4 py-2 font-medium text-[var(--accent-text)] shadow-sm transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? "Checking…" : "Enter"}
           </button>

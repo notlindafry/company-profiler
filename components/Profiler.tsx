@@ -274,7 +274,7 @@ export default function Profiler({
           <button
             type="submit"
             disabled={loading}
-            className="mt-4 inline-flex items-center rounded-lg bg-[var(--accent)] px-4 py-2 font-medium text-white shadow-sm transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-4 inline-flex items-center rounded-lg bg-[var(--accent)] px-4 py-2 font-medium text-[var(--accent-text)] shadow-sm transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? "Researching…" : "Research company"}
           </button>
