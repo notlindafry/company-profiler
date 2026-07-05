@@ -10,29 +10,45 @@
    values, e.g. bg-[var(--surface)] / text-[var(--text)].
    --------------------------------------------------------------------------- */
 :root {
-  /* Body text rides the shared Inter/Space Grotesk fonts loaded in layout.tsx
-     via next/font (--font-body / --font-display); this is just the app's own
-     alias, with a system-font fallback in case those variables are absent. */
+  /* Body/UI type rides the shared Inter/Space Grotesk fonts loaded in
+     layout.tsx via next/font (--font-body / --font-display, self-hosted at
+     build so CSP font-src stays 'self'); this alias just adds a system-font
+     fallback in case those variables are ever absent. */
   --font-sans: var(--font-body), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
-  /* Dark theme (screen default) — house palette: near-black bg, sage accent */
-  --bg: #0f120d; /* page background: deepest near-black green */
-  --surface: #1d231c; /* cards / panels, lifted off the page */
-  --accent: #7d9b83; /* primary action / brand sage */
-  --text: #e6e4db; /* primary body text (cream) */
-  --text-strong: #ffffff; /* headings / emphasis */
+  /* --- the five palette colors (shared house theme, screen default) --- */
+  --bg: #0f120d; /* page background (deepest near-black green) */
+  --surface: #1d231c; /* cards, panels, inputs, chips */
+  --accent: #7d9b83; /* interactive: active state, focus ring, links */
+  --text: #e6e4db; /* primary body text */
+  --text-strong: #ffffff; /* headings, emphasis */
 
-  /* Derived from the palette above via color-mix() — no new hues */
-  --surface-2: color-mix(in srgb, var(--surface) 84%, var(--accent)); /* inputs, hover states */
-  --border: color-mix(in srgb, var(--accent), transparent 80%); /* subtle dividers / outlines */
-  --text-muted: color-mix(in srgb, var(--text), transparent 40%); /* labels / secondary text, ~60% */
-  --accent-hover: color-mix(in srgb, var(--accent), white 15%); /* hover state for accent */
-  --accent-text: var(--bg); /* dark text on the sage fill for contrast */
-  --link: color-mix(in srgb, var(--accent), white 15%); /* lightened sage for readable links on dark */
+  /* --- derived from the palette via color-mix() — no new hues --- */
+  --bg-raised: var(--surface);
+  --surface-hover: color-mix(in srgb, var(--surface) 84%, var(--accent));
+  --text-muted: color-mix(in srgb, var(--text), transparent 40%); /* ~60% */
+  --text-faint: color-mix(in srgb, var(--text), transparent 58%); /* ~42% */
+  --border: color-mix(in srgb, var(--accent), transparent 80%); /* accent @ 20% */
+  --border-strong: color-mix(in srgb, var(--accent), transparent 62%);
+  --accent-dim: color-mix(in srgb, var(--accent), transparent 84%);
+  --accent-ink: var(--bg); /* dark text on a sage fill */
 
-  /* Semantic, kept distinct from the palette on purpose (see globals.css comment) */
-  --warn: #e0a458; /* amber for low-confidence notes on dark */
+  /* Legacy token names, kept as aliases so existing component classes keep
+     working under the canonical palette (value-match, per the theme spec). */
+  --surface-2: var(--surface-hover);
+  --accent-text: var(--accent-ink);
+  --accent-hover: color-mix(in srgb, var(--accent), white 15%); /* button hover */
+  --link: color-mix(in srgb, var(--accent), white 15%); /* readable link on dark */
+
+  /* Semantic, kept distinct from the palette on purpose (the five-color palette
+     has no red/amber; collapsing these into sage would remove their meaning). */
+  --danger: #cf8f83; /* muted red for errors */
+  --warn: #e0a458; /* amber for low-confidence notes */
+
+  --radius: 12px;
+  --radius-sm: 8px;
+  --maxw: 1120px;
 
   color-scheme: dark;
 }
