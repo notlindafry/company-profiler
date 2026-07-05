@@ -23,6 +23,21 @@ export const metadata: Metadata = {
     "Research a company on the live web and get a clean, sourced profile for interview prep.",
   // Ask search engines not to index or list this site.
   robots: { index: false, follow: false },
+  // App icons: browser tab favicon + the iOS home-screen icon. The PWA install
+  // icons live in app/manifest.ts.
+  icons: {
+    icon: [
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
+  // Let iOS launch it fullscreen (standalone) when added to the home screen.
+  appleWebApp: {
+    capable: true,
+    title: "Profiler",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export const viewport: Viewport = {
