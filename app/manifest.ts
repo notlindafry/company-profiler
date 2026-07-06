@@ -14,17 +14,19 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: "#0f120d",
     theme_color: "#0f120d",
     orientation: "portrait",
+    // Filenames are versioned (-v2) so a new icon lands at a fresh URL and
+    // isn't served from Chrome's or the CDN's cache of the previous icon.
     icons: [
-      { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icon-192-v2.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icon-512-v2.png", sizes: "512x512", type: "image/png", purpose: "any" },
       {
-        src: "/icon-maskable-192.png",
+        src: "/icon-maskable-192-v2.png",
         sizes: "192x192",
         type: "image/png",
         purpose: "maskable",
       },
       {
-        src: "/icon-maskable-512.png",
+        src: "/icon-maskable-512-v2.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",

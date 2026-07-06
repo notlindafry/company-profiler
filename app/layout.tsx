@@ -27,10 +27,10 @@ export const metadata: Metadata = {
   // icons live in app/manifest.ts.
   icons: {
     icon: [
-      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/favicon-32-v2.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192-v2.png", sizes: "192x192", type: "image/png" },
     ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+    apple: [{ url: "/apple-touch-icon-v2.png", sizes: "180x180" }],
   },
   // Let iOS launch it fullscreen (standalone) when added to the home screen.
   appleWebApp: {
