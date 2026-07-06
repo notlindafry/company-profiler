@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   icons: {
     icon: "/icon.svg",
-    apple: "/apple-touch-icon-v7.png",
+    apple: "/apple-touch-icon-v8.png",
   },
   // Let iOS launch it fullscreen (standalone) when added to the home screen.
   appleWebApp: {
