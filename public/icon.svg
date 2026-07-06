@@ -1,27 +1,16 @@
 <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Company Profiler app icon (full-bleed, maskable): two office buildings">
-  <!-- full-bleed green background; launcher masks this to a circle, so the
-       whole tile reads as solid green with the buildings safely centered -->
   <rect width="512" height="512" fill="#7D9B83"/>
-  <g fill="#0F120D">
-    <!-- left tower -->
-    <rect x="168" y="168" width="96" height="176" rx="10"/>
-    <!-- right tower -->
-    <rect x="270" y="214" width="86" height="130" rx="10"/>
-  </g>
-  <g fill="#7D9B83">
-    <!-- left tower windows -->
-    <rect x="186" y="190" width="22" height="22" rx="4"/>
-    <rect x="224" y="190" width="22" height="22" rx="4"/>
-    <rect x="186" y="230" width="22" height="22" rx="4"/>
-    <rect x="224" y="230" width="22" height="22" rx="4"/>
-    <rect x="186" y="270" width="22" height="22" rx="4"/>
-    <rect x="224" y="270" width="22" height="22" rx="4"/>
-    <!-- left tower door -->
-    <rect x="203" y="308" width="26" height="36" rx="6"/>
-    <!-- right tower windows -->
-    <rect x="286" y="236" width="20" height="20" rx="4"/>
-    <rect x="320" y="236" width="20" height="20" rx="4"/>
-    <rect x="286" y="274" width="20" height="20" rx="4"/>
-    <rect x="320" y="274" width="20" height="20" rx="4"/>
-  </g>
+  <rect x="124.4" y="132.8" width="134.4" height="246.4" rx="14" fill="#0F120D"/>
+  <rect x="267.2" y="197.2" width="120.4" height="182" rx="14" fill="#0F120D"/>
+  <rect x="149.6" y="163.6" width="30.8" height="30.8" rx="5.6" fill="#7D9B83"/>
+  <rect x="202.8" y="163.6" width="30.8" height="30.8" rx="5.6" fill="#7D9B83"/>
+  <rect x="149.6" y="219.6" width="30.8" height="30.8" rx="5.6" fill="#7D9B83"/>
+  <rect x="202.8" y="219.6" width="30.8" height="30.8" rx="5.6" fill="#7D9B83"/>
+  <rect x="149.6" y="275.6" width="30.8" height="30.8" rx="5.6" fill="#7D9B83"/>
+  <rect x="202.8" y="275.6" width="30.8" height="30.8" rx="5.6" fill="#7D9B83"/>
+  <rect x="173.4" y="328.8" width="36.4" height="50.4" rx="8.4" fill="#7D9B83"/>
+  <rect x="289.6" y="228" width="28" height="28" rx="5.6" fill="#7D9B83"/>
+  <rect x="337.2" y="228" width="28" height="28" rx="5.6" fill="#7D9B83"/>
+  <rect x="289.6" y="281.2" width="28" height="28" rx="5.6" fill="#7D9B83"/>
+  <rect x="337.2" y="281.2" width="28" height="28" rx="5.6" fill="#7D9B83"/>
 </svg>
