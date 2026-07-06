@@ -1,4 +1,4 @@
-import { ABOUT_ME, RECENCY_YEARS } from "./config";
+import { resolveAboutMe, RECENCY_YEARS } from "./config";
 
 // The depth bullet is tier-dependent. The fast variant (default / Sonnet) caps
 // effort so a profile comes back quickly; the thorough variant (premium / Opus)
@@ -150,7 +150,16 @@ need my practice could serve and whether they would buy advisory help:
 `.trim();
 }
 
-export function buildCompanyPrompt(company: string, detail?: string): string {
+// `aboutMe` is the background that tailors the fitAndAngle section. It is
+// resolved server-side per request (real value from the ABOUT_ME env var, or the
+// committed generic example as a fallback). Callers pass the already-resolved
+// text; if omitted, we resolve it here so the function stays self-contained.
+export function buildCompanyPrompt(
+  company: string,
+  detail?: string,
+  aboutMe?: string
+): string {
+  const about = aboutMe ?? resolveAboutMe().text;
   const trimmed = detail?.trim();
   const disambiguation = trimmed
     ? `
@@ -179,7 +188,7 @@ factual sections toward any lens.
 ${fitAndAngleGuidance()}
 
 About me (use ONLY for the fitAndAngle section):
-${ABOUT_ME}
+${about}
 
 Remember: use web_search throughout (including SEC EDGAR and regulator sites where
 relevant), source every fact, write "Not found" rather than guessing, and flag

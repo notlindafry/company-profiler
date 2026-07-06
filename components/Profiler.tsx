@@ -26,6 +26,9 @@ export default function Profiler({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CompanyProfile | null>(null);
+  // True when the server tailored Fit & Angle against the committed example
+  // background because the ABOUT_ME env var was unset — surfaced as a notice.
+  const [usedExampleBackground, setUsedExampleBackground] = useState(false);
   // Date the current result was queried, used for the PDF/print file name.
   const [queryDate, setQueryDate] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
@@ -54,6 +57,7 @@ export default function Profiler({
     setLoading(true);
     setError(null);
     setResult(null);
+    setUsedExampleBackground(false);
     // Stamp the query with today's date (local), e.g. "2026-06-03".
     setQueryDate(new Date().toLocaleDateString("en-CA"));
 
@@ -84,6 +88,7 @@ export default function Profiler({
       const decoder = new TextDecoder();
       let buffer = "";
       let finalResult: CompanyProfile | null = null;
+      let finalUsedExample = false;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -96,7 +101,12 @@ export default function Profiler({
           buffer = buffer.slice(newlineIndex + 1);
           if (!line) continue;
 
-          let msg: { type?: string; profile?: CompanyProfile; error?: string };
+          let msg: {
+            type?: string;
+            profile?: CompanyProfile;
+            usedExampleBackground?: boolean;
+            error?: string;
+          };
           try {
             msg = JSON.parse(line);
           } catch {
@@ -105,6 +115,7 @@ export default function Profiler({
 
           if (msg.type === "result" && msg.profile) {
             finalResult = msg.profile;
+            finalUsedExample = msg.usedExampleBackground === true;
           } else if (msg.type === "error") {
             throw new Error(msg.error || "Research failed. Please try again.");
           }
@@ -118,6 +129,7 @@ export default function Profiler({
         );
       }
       setResult(finalResult);
+      setUsedExampleBackground(finalUsedExample);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
@@ -314,7 +326,10 @@ export default function Profiler({
               Print / Save as PDF
             </button>
           </div>
-          <CompanyView profile={result} />
+          <CompanyView
+            profile={result}
+            usedExampleBackground={usedExampleBackground}
+          />
         </div>
       )}
     </main>

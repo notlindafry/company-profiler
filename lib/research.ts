@@ -30,7 +30,8 @@ export async function researchCompany(
   company: string,
   detail?: string,
   signal?: AbortSignal,
-  modelTier?: string
+  modelTier?: string,
+  aboutMe?: string
 ): Promise<CompanyProfile> {
   // Resolve the requested tier to a concrete, validated model option (falls back
   // to the default for anything unrecognized). The option carries the model ID
@@ -51,7 +52,7 @@ export async function researchCompany(
   const requestOptions = signal ? { signal } : undefined;
 
   const messages: Anthropic.MessageParam[] = [
-    { role: "user", content: buildCompanyPrompt(company, detail) },
+    { role: "user", content: buildCompanyPrompt(company, detail, aboutMe) },
   ];
 
   // --- Search phase (up to 2 passes) ---

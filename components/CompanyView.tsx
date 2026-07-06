@@ -103,8 +103,13 @@ function SnapshotRow({ label, value }: { label: string; value?: string }) {
 
 export default function CompanyView({
   profile,
+  usedExampleBackground = false,
 }: {
   profile: CompanyProfile;
+  // True when the server tailored the Fit & Angle sections against the committed
+  // example background (the ABOUT_ME env var was unset). Surfaced as a notice so
+  // a misconfigured deploy can't silently pass off decoy-based verdicts as real.
+  usedExampleBackground?: boolean;
 }) {
   const s = profile.snapshot;
   return (
@@ -347,6 +352,18 @@ export default function CompanyView({
           <Empty />
         )}
       </Section>
+
+      {/* Example-background notice — the Fit & Angle verdicts below were tailored
+          against the committed decoy profile because ABOUT_ME was unset. */}
+      {usedExampleBackground && (
+        <div className="mt-5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-[var(--warn)]">
+          Generated against the example background — set the{" "}
+          <code className="rounded bg-amber-500/20 px-1 py-0.5 font-mono text-xs">
+            ABOUT_ME
+          </code>{" "}
+          environment variable for personalized assessments.
+        </div>
+      )}
 
       {/* Fit & Angle — one section per lens (W2 role, advisory client) */}
       {INTENTS.map((meta) => {

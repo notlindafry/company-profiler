@@ -101,29 +101,40 @@ export const RESULT_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 // ---------------------------------------------------------------------------
 // "About me" — used ONLY to tailor the final "Fit & Angle" sections of each
-// profile. Edit this to match your own background. Every profile produces both
-// Fit & Angle lenses (W2 / advisory); this background feeds both,
-// so keep both the practice and the W2 criteria here.
+// profile. Every profile produces both Fit & Angle lenses (W2 / advisory); this
+// background feeds both, so it carries both the practice and the W2 criteria.
+//
+// The block below is a GENERIC EXAMPLE ONLY, safe to commit. Your REAL
+// background must be supplied at runtime via the ABOUT_ME environment variable
+// (server-side only) and must NEVER be committed to this repo — see
+// resolveAboutMe() below and .env.example. Editing this constant only changes
+// the fallback example shown when ABOUT_ME is unset.
 // ---------------------------------------------------------------------------
-export const ABOUT_ME = `
-- Level / domain: Director / Sr. Director / VP — GRC & Technology Risk. 12+ years.
-- Career arc: life-sciences compliance (McKesson, Exelixis, 2014-2019) -> Box
-  (2019-2024; built Risk & Resilience from scratch, ended as Director) -> Netflix
-  (2024-2025; Head of Tech Risk & Enterprise Resilience) -> Coinbase (2025-2026;
-  Director, Tech Risk).
-- Known for: building GRC functions that drive business decisions rather than
-  produce paperwork; quantitative risk (FAIR-grounded, built in-house tooling
-  instead of buying); AI-native operating models; embedding risk into engineering
-  planning rhythms; board reporting that drives engagement; people leadership.
-  Player-coach who writes runbooks, builds agents, and drafts decks alongside the team.
-- Now running Second Line Labs, a solo advisory practice: fractional / advisory
-  GRC & Technology Risk for tech-forward companies in regulated spaces — standing
-  up or maturing a second-line function, quantitative (FAIR) risk programs, board-
-  and regulator-ready reporting, and AI-native risk operating models. Engagements
-  are fractional, project, or advisory-seat — NOT a full-time W2 hire.
-- W2 criteria (only relevant if I were taking a full-time seat, which is not the
-  default lens): Director / Sr. Director / VP GRC or Tech Risk at $5B+ tech-forward
-  companies in regulated spaces — mature enough to need a real second-line mandate
-  and a team to lead (not a solo IC seat with a fancy title). Remote preferred;
-  hybrid OK in the Seattle area.
+export const EXAMPLE_ABOUT_ME = `
+- Level / domain: Director / Sr. Director / VP — Governance, Risk & Compliance
+  (GRC) & Technology Risk. 12+ years.
+- Primary lens: a full-time W2 seat. Director / Sr. Director / VP GRC or
+  Technology Risk at large, technology-forward companies in regulated spaces —
+  mature enough to need a real second-line mandate and a team to lead, not a solo
+  IC seat with a fancy title. Remote preferred; open to hybrid.
+- Career arc: enterprise IT audit and SOX compliance early on, then a decade
+  building and leading second-line risk functions across fintech and SaaS —
+  internal controls, third-party risk, and security governance.
+- Known for: GRC functions that drive business decisions rather than produce
+  paperwork; quantitative risk (FAIR-grounded, built in-house tooling instead of
+  buying); AI-native operating models; embedding risk into engineering planning
+  rhythms; board reporting that drives engagement; player-coach people leadership.
+- Secondary lens: an independent advisory practice — fractional / advisory GRC &
+  Technology Risk (standing up or maturing a second line, FAIR-based quantitative
+  programs, board- and regulator-ready reporting, AI-native risk operating
+  models). Engagements are fractional, project, or advisory-seat.
 `.trim();
+
+// Server-only. Reads the real background from the ABOUT_ME env var; falls
+// back to the committed generic example. NEVER log or return this value to
+// the client — it feeds the system prompt only.
+export function resolveAboutMe(): { text: string; isExample: boolean } {
+  const fromEnv = process.env.ABOUT_ME?.trim();
+  if (fromEnv) return { text: fromEnv, isExample: false };
+  return { text: EXAMPLE_ABOUT_ME, isExample: true };
+}

@@ -9,6 +9,7 @@ import {
   PROFILE_GLOBAL_RATE_LIMIT,
   PROFILE_GLOBAL_MAX_CONCURRENT,
   resolveModel,
+  resolveAboutMe,
 } from "@/lib/config";
 import { rateLimit, acquireSlot, releaseSlot, clientIp } from "@/lib/ratelimit";
 import {
@@ -107,6 +108,13 @@ export async function POST(req: Request) {
   // anything unrecognized, so a bad value can never reach the API as a raw ID.
   const modelTier = resolveModel(model).tier;
 
+  // Resolve the background server-side, once per request: the real value from
+  // the ABOUT_ME env var, or the committed generic example as a fallback. The
+  // TEXT feeds the prompt only (never sent to the client); the isExample flag is
+  // surfaced to the client as `usedExampleBackground` so a misconfigured deploy
+  // can't silently produce Fit & Angle verdicts against the decoy profile.
+  const { text: aboutMe, isExample: usedExampleBackground } = resolveAboutMe();
+
   const client = new Anthropic();
   const trimmedCompany = sanitizeInput(company, MAX_COMPANY_LEN);
   const trimmedDetail = detail ? sanitizeInput(detail, MAX_DETAIL_LEN) || undefined : undefined;
@@ -188,10 +196,10 @@ export async function POST(req: Request) {
 
       try {
         const profile = await Promise.race([
-          researchCompany(client, trimmedCompany, trimmedDetail, ac.signal, modelTier),
+          researchCompany(client, trimmedCompany, trimmedDetail, ac.signal, modelTier, aboutMe),
           timeoutPromise,
         ]);
-        send({ type: "result", profile });
+        send({ type: "result", profile, usedExampleBackground });
       } catch (err) {
         console.error("Research failed:", err);
         send({ type: "error", error: describeError(err) });

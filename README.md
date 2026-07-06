@@ -22,7 +22,9 @@ the browser.
 - `app/api/profile/route.ts` — the server route that calls Claude. Your API key
   is only ever used here, on the server.
 - `lib/config.ts` — **the one file you'll most likely edit.** It holds the model
-  name and the "About me" text used to tailor the *Fit & Angle* section.
+  options and a generic example "About me" fallback. Your *real* background for
+  the *Fit & Angle* section is set via the `ABOUT_ME` environment variable (see
+  "Changing things later"), so it never lands in the repo.
 - `lib/prompt.ts` — the research instructions sent to Claude.
 - `lib/schema.ts` — the single definition of the profile's shape (every section
   and field, with per-field guidance). The API enforces it, so the model must
@@ -71,6 +73,10 @@ the browser.
    - **Name:** `ANTHROPIC_API_KEY`
    - **Value:** your `sk-ant-...` key
    - Apply it to Production (and Preview if you like).
+   - *(Optional)* **Name:** `ABOUT_ME` — your real background for the *Fit &
+     Angle* sections (server-side only, never exposed to the browser). Multiline
+     values are fine in the Vercel dashboard. If you leave it unset, the app uses
+     a generic example profile and says so on the report.
 5. Click **Deploy**. When it finishes, you'll get a public URL.
 
 > **Note on timing:** research usually takes a few minutes. The server route is
@@ -107,9 +113,17 @@ the browser.
   Sonnet 4.6 (faster, cheaper) or Opus 4.8 (most capable, most expensive). To
   add, remove, or swap the offered models (or change the default), edit
   `MODEL_OPTIONS` / `DEFAULT_MODEL_TIER` in `lib/config.ts`.
-- **Update your background** (for the *Fit & Angle* section): edit `ABOUT_ME` in
-  `lib/config.ts`. It feeds both lenses, so keep both your advisory practice
-  and your W2 criteria there.
+- **Update your background** (for the *Fit & Angle* section): set the `ABOUT_ME`
+  environment variable — locally in `.env.local`, and in Vercel → **Settings →
+  Environment Variables** for your deploy. It is read on the **server only** and
+  is never sent to the browser, so your real background stays out of the repo and
+  out of git history. It feeds both lenses, so keep both your advisory practice
+  and your W2 criteria there. If `ABOUT_ME` is unset, the app falls back to a
+  generic example profile (`EXAMPLE_ABOUT_ME` in `lib/config.ts`) and shows an
+  on-page notice above the *Fit & Angle* sections so you know a report was built
+  against the example rather than your real background. (Because `ABOUT_ME` can be
+  multiline, wrap the value in double quotes or use `\n` escapes; the Vercel
+  dashboard accepts multiline values directly.)
 - **Add / rename / reword the evaluation lenses:** edit `INTENTS` (section title
   and field labels) in `lib/schema.ts` and the matching per-lens guidance in
   `fitAndAngleGuidance` in `lib/prompt.ts`. Every profile renders one Fit & Angle
