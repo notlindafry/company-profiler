@@ -23,12 +23,12 @@ export default function manifest(): MetadataRoute.Manifest {
     // "any" and "maskable" with the same src; Chrome's manifest parser keeps
     // each entry's purpose, so the maskable icon is selected for the adaptive
     // tile while "any" covers non-maskable contexts. Filenames are versioned
-    // (-v6) so the new icon lands at a fresh URL, past any cache.
+    // (-v7) so the new icon lands at a fresh URL, past any cache.
     icons: [
-      { src: "/icon-192-v6.png", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "/icon-192-v6.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
-      { src: "/icon-512-v6.png", sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: "/icon-512-v6.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: "/icon-192-v7.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icon-192-v7.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
+      { src: "/icon-512-v7.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icon-512-v7.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }
