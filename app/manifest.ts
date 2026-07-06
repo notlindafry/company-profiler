@@ -16,21 +16,14 @@ export default function manifest(): MetadataRoute.Manifest {
     orientation: "portrait",
     // Filenames are versioned (-v2) so a new icon lands at a fresh URL and
     // isn't served from Chrome's or the CDN's cache of the previous icon.
+    // Each full-bleed icon is listed as both "any" and "maskable" (same file,
+    // its mark sits inside the maskable safe zone) so Chrome uses it as an
+    // adaptive, edge-to-edge home-screen icon.
     icons: [
       { src: "/icon-192-v2.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icon-192-v2.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
       { src: "/icon-512-v2.png", sizes: "512x512", type: "image/png", purpose: "any" },
-      {
-        src: "/icon-maskable-192-v2.png",
-        sizes: "192x192",
-        type: "image/png",
-        purpose: "maskable",
-      },
-      {
-        src: "/icon-maskable-512-v2.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "maskable",
-      },
+      { src: "/icon-512-v2.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }
