@@ -10,10 +10,27 @@ import { sanitizeProfile } from "./sanitize";
 import { cacheGet, cacheSet } from "./cache";
 import { CompanyProfileSchema, type CompanyProfile } from "./schema";
 
-// Structured-output format derived from the one Zod schema. Sent with every
-// request so the API constrains the model's final answer to exactly this
-// shape — no fences, no prose, guaranteed-parseable JSON.
-const PROFILE_FORMAT = zodOutputFormat(CompanyProfileSchema);
+// JSON Schema derived from the one Zod schema. zodOutputFormat's transform emits
+// the API-accepted shape (per-field descriptions, $defs/$ref, required) — we
+// reuse just that schema as the input schema of the emit_profile tool below.
+const PROFILE_INPUT_SCHEMA = zodOutputFormat(CompanyProfileSchema)
+  .schema as Anthropic.Tool.InputSchema;
+
+// The model returns the finished profile by calling this tool once. It is a
+// plain (non-strict) tool: the schema and its field descriptions still steer the
+// model, but — unlike output_config.format (strict structured outputs) — a
+// non-strict tool does NOT compile a constrained-decoding grammar. That matters
+// because this schema is large enough that strict structured outputs overflow
+// the API's grammar-size cap ("The compiled grammar is too large ..."), which
+// 400s the whole request. The tool_use.input comes back already parsed into an
+// object; CompanyProfileSchema re-validates it before anything trusts the shape.
+const PROFILE_TOOL_NAME = "emit_profile";
+const PROFILE_TOOL: Anthropic.Tool = {
+  name: PROFILE_TOOL_NAME,
+  description:
+    "Return the finished company profile as a single structured object. Call this exactly once, using only what you have already researched.",
+  input_schema: PROFILE_INPUT_SCHEMA,
+};
 
 // The model is part of the key: a profile produced by Sonnet must not be served
 // for an Opus request (or vice versa), since the chosen model is the whole point.
@@ -100,26 +117,33 @@ export async function researchCompany(
   }
 
   // --- Finalization pass ---
-  // NO tools (so no citations) + structured output, which constrains the answer
-  // to exactly CompanyProfileSchema. This always runs: the search passes can't
-  // carry a format, so this pass is what produces the guaranteed-parseable JSON
-  // (gaps the model couldn't fill become "Not found").
+  // Drop web_search (so no citations, which are incompatible with a constrained
+  // final answer) and have the model emit the profile via the emit_profile tool.
+  // We force that tool instead of using output_config.format because this
+  // schema is too large to compile into a strict decoding grammar — see
+  // PROFILE_TOOL above. This pass always runs: it's what turns the gathered
+  // research into the structured profile (gaps become "Not found").
   messages.push({
     role: "user",
     content:
-      'Stop researching now. Using only what you have already found, output the final profile. Mark anything you could not confirm as "Not found", and put low-confidence items in "unknowns". Do not request any more tools.',
+      'Stop researching now. Using only what you have already found, return the final profile by calling the `emit_profile` tool exactly once. Mark anything you could not confirm as "Not found", and put low-confidence items in "unknowns". Do not run any more web searches.',
   });
 
-  // No cache_control here: this pass drops the tools list and adds a format, both
-  // of which invalidate the prompt cache anyway — a marker would only add the
-  // cache-write surcharge with nothing ever reading it back.
+  // No cache_control here: this pass swaps the tools list (web_search out,
+  // emit_profile in), which invalidates the prompt cache anyway — a marker would
+  // only add the cache-write surcharge with nothing ever reading it back.
+  // thinking is disabled: turning research into JSON needs no new reasoning, and
+  // disabling it keeps a forced tool_choice valid across the supported models.
   const finalMessage = await client.messages
     .stream(
       {
         model,
         max_tokens: 16000,
-        output_config: { effort, format: PROFILE_FORMAT },
+        output_config: { effort },
+        thinking: { type: "disabled" },
         system,
+        tools: [PROFILE_TOOL],
+        tool_choice: { type: "tool", name: PROFILE_TOOL_NAME },
         messages,
       },
       requestOptions
@@ -132,35 +156,28 @@ export async function researchCompany(
     );
   }
 
-  // Output hit the max_tokens ceiling — the JSON is cut off mid-object, so
-  // fail with a clear message instead of a confusing parse error.
+  // Output hit the max_tokens ceiling — the tool input is cut off mid-object, so
+  // fail with a clear message instead of a confusing validation error.
   if (finalMessage.stop_reason === "max_tokens") {
     throw new Error(
       "The profile was cut off before it finished. Please try again."
     );
   }
 
-  // With structured outputs, the final text IS the JSON object — no fences.
-  const fullText = finalMessage.content
-    .filter((block): block is Anthropic.TextBlock => block.type === "text")
-    .map((block) => block.text)
-    .join("\n");
-
-  if (!fullText.trim()) {
-    throw new Error("The model returned no readable text.");
+  // The finished profile is the forced tool call's input — the SDK has already
+  // parsed it from JSON into an object, so there is no text/fences to handle.
+  const toolUse = finalMessage.content.find(
+    (block): block is Anthropic.ToolUseBlock =>
+      block.type === "tool_use" && block.name === PROFILE_TOOL_NAME
+  );
+  if (!toolUse) {
+    throw new Error("The model did not return a profile. Please try again.");
   }
 
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(fullText);
-  } catch {
-    throw new Error("The model's response was not valid JSON. Please try again.");
-  }
-
-  // The API already constrains the output to CompanyProfileSchema; this
-  // re-validation is a cheap belt-and-suspenders check so everything after
-  // this line can trust the shape completely.
-  const validated = CompanyProfileSchema.safeParse(parsed);
+  // The emit_profile schema is advisory (non-strict tool), so the input isn't
+  // grammar-guaranteed — validate it against CompanyProfileSchema so everything
+  // after this line can trust the shape completely.
+  const validated = CompanyProfileSchema.safeParse(toolUse.input);
   if (!validated.success) {
     throw new Error(
       "The model's response did not match the expected profile format. Please try again."

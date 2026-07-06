@@ -52,10 +52,10 @@ ${depthRule}
   "About me" background in your output; use the background ONLY to shape the
   judgments in the "fitAndAngle" section.
 
-Your final answer is a single JSON object. Its shape is enforced by the
-structured output schema attached to the request; the schema's field
-descriptions carry per-field guidance — follow them. Use the exact string
-"Not found" for unknown string fields, and [] for sections with no findings.
+Your final answer is a single structured company profile matching the required
+schema; the schema's field descriptions carry per-field guidance — follow them.
+Use the exact string "Not found" for unknown string fields, and [] for sections
+with no findings.
 `.trim();
 }
 
@@ -179,9 +179,9 @@ ${recencyGuidance(
   "the company's foundational history — its founding date and IPO date — is inherently older and must still be captured."
 )}
 
-The profile's shape and per-field guidance come from the structured output
-schema attached to this request. The factual sections are objective and do NOT
-change based on lens. Only "fitAndAngle" is tailored to me, and it provides two
+The profile's shape and per-field guidance come from the required output schema.
+The factual sections are objective and do NOT change based on lens. Only
+"fitAndAngle" is tailored to me, and it provides two
 independent assessments — one per lens — as described below. Do NOT steer the
 factual sections toward any lens.
 
