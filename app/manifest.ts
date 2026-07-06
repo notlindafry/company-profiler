@@ -13,20 +13,20 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     background_color: "#0f120d",
     theme_color: "#0f120d",
-    // Icons are rendered from public/icon.svg as full-bleed RGBA PNGs (a solid
-    // green field with the buildings centered inside the maskable safe zone).
-    // The alpha channel matters: Android/Chrome recognise an RGBA maskable icon
-    // as a proper adaptive icon and paint it edge-to-edge, whereas a flat RGB
-    // icon was being treated as a legacy icon and inset on a white circle —
-    // that was the source of the white padding. Each size is listed as both
-    // "any" and "maskable" (same file) so launchers that crop to a circle use
-    // the full-bleed art and other contexts still render it. Filenames are
-    // versioned (-v4) so the new icon lands at a fresh URL, past any cache.
+    // Icons are rendered from public/icon.svg as full-bleed RGBA PNGs: dark
+    // buildings on a WHITE field. The white background is deliberate — the
+    // launcher on the target device insets web-app icons onto a white circle
+    // instead of honouring the maskable icon edge-to-edge, so a white-backed
+    // icon blends into that circle seamlessly (no visible ring) rather than
+    // showing a coloured square floating in white. Each size is still listed as
+    // both "any" and "maskable" (same file) so launchers that DO crop to a
+    // circle render it full-bleed too. Filenames are versioned (-v5) so the new
+    // icon lands at a fresh URL, past any cache.
     icons: [
-      { src: "/icon-192-v4.png", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "/icon-192-v4.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
-      { src: "/icon-512-v4.png", sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: "/icon-512-v4.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: "/icon-192-v5.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icon-192-v5.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
+      { src: "/icon-512-v5.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icon-512-v5.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }
