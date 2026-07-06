@@ -26,12 +26,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
   // App icons: browser tab favicon + the iOS home-screen icon. The PWA install
   // icons live in app/manifest.ts.
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: [
-      { url: "/favicon-32-v3.png", sizes: "32x32", type: "image/png" },
-      { url: "/icon-192-v3.png", sizes: "192x192", type: "image/png" },
+      { url: "/favicon-32-v4.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192-v4.png", sizes: "192x192", type: "image/png" },
     ],
-    apple: [{ url: "/apple-touch-icon-v3.png", sizes: "180x180" }],
+    apple: [{ url: "/apple-touch-icon-v4.png", sizes: "180x180" }],
   },
   // Let iOS launch it fullscreen (standalone) when added to the home screen.
   appleWebApp: {
