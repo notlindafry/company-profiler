@@ -9,7 +9,16 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "Profiler",
     description:
       "Research a company on the live web and get a clean, sourced profile for interview prep.",
-    start_url: "/",
+    // Fresh app identity. Google mints WebAPKs server-side and caches them by
+    // (origin, id/start_url). This app's identity was "/" throughout earlier
+    // attempts, so Google cached it as a legacy/white-inset build; uninstall +
+    // reinstall just re-pulls that cached build (swapping the icon bitmap but
+    // keeping the legacy wrapper). Giving it a distinct id/start_url forces a
+    // brand-new server mint that evaluates the current full-bleed maskable icon
+    // and produces an adaptive (edge-to-edge) tile. The app ignores the query,
+    // so launch behaviour at "/?v=7" is unchanged.
+    id: "/?v=7",
+    start_url: "/?v=7",
     display: "standalone",
     background_color: "#0f120d",
     theme_color: "#0f120d",
