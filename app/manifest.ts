@@ -20,16 +20,21 @@ export default function manifest(): MetadataRoute.Manifest {
     // home-screen icon that was baked before these full-bleed icons existed
     // (and therefore drawn inset on a white circle) gets replaced.
     //
-    // Each full-bleed icon carries the combined purpose "any maskable" in a
-    // single entry, rather than the same file listed twice under separate
-    // "any" and "maskable" purposes: Chrome de-dupes icons by src, and with
-    // two entries sharing one src it can register only the first ("any") and
-    // drop the maskable purpose — which is what makes the launcher fall back
-    // to the white-padded, inset icon. The mark sits inside the maskable safe
-    // zone, so the icon fills the adaptive shape edge-to-edge with no padding.
+    // The "maskable" icon is served under its OWN filename, distinct from the
+    // "any" icon, rather than listing the same src twice under two purposes:
+    // Chrome de-dupes icons by src, and with two entries sharing one src it can
+    // register only the first ("any") and drop the maskable purpose — which is
+    // what makes the launcher fall back to the white-padded, inset icon. Giving
+    // each purpose its own URL removes that ambiguity. (Next's manifest type
+    // only allows a single purpose per entry, so the spec's space-separated
+    // "any maskable" isn't an option here.) The files are byte-identical: the
+    // icon is full-bleed with its mark inside the maskable safe zone, so it
+    // fills the adaptive shape edge-to-edge with no padding.
     icons: [
-      { src: "/icon-192-v3.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
-      { src: "/icon-512-v3.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
+      { src: "/icon-192-v3.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icon-512-v3.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icon-192-maskable-v3.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
+      { src: "/icon-512-maskable-v3.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }
