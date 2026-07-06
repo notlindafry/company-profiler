@@ -9,20 +9,10 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "Profiler",
     description:
       "Research a company on the live web and get a clean, sourced profile for interview prep.",
-    // Explicit app identity. A WebAPK's icon *type* (adaptive/maskable vs.
-    // white-inset legacy) is fixed when the app is first minted under a given
-    // id; later manifest updates only swap the icon bitmap, not the type. An
-    // earlier id was first minted while the maskable icon was still broken, so
-    // it got locked in as a white-inset app and stayed that way through every
-    // icon fix. Bumping the id forces Chrome to mint a brand-new WebAPK from
-    // scratch — now that the maskable icon is valid, that fresh mint is
-    // adaptive. start_url stays "/" so the app still opens the same home.
-    id: "/?v=2",
-    start_url: "/?v=2",
+    start_url: "/",
     display: "standalone",
     background_color: "#0f120d",
     theme_color: "#0f120d",
-    orientation: "portrait",
     // Icons are rendered from public/icon.svg as full-bleed RGBA PNGs (a solid
     // green field with the buildings centered inside the maskable safe zone).
     // The alpha channel matters: Android/Chrome recognise an RGBA maskable icon
