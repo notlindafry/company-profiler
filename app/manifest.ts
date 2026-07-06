@@ -17,8 +17,8 @@ export default function manifest(): MetadataRoute.Manifest {
     // icon fix. Bumping the id forces Chrome to mint a brand-new WebAPK from
     // scratch — now that the maskable icon is valid, that fresh mint is
     // adaptive. start_url stays "/" so the app still opens the same home.
-    id: "/?app=profiler-v2",
-    start_url: "/",
+    id: "/?v=2",
+    start_url: "/?v=2",
     display: "standalone",
     background_color: "#0f120d",
     theme_color: "#0f120d",
