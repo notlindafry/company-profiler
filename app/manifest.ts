@@ -9,6 +9,14 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "Profiler",
     description:
       "Research a company on the live web and get a clean, sourced profile for interview prep.",
+    // Explicit app identity. Without an `id`, Chrome derives one from start_url
+    // ("/"), so a phone that already installed the app keeps reviving that same
+    // cached WebAPK — including its stale, white-inset icon — every time it's
+    // re-added. Giving the app a distinct `id` makes Chrome treat this as a new
+    // app and mint a fresh WebAPK (with the full-bleed maskable icon) instead
+    // of resurrecting the old one. start_url stays "/" so it still opens the
+    // app home; only the identity used for install/update matching changes.
+    id: "/?app=profiler",
     start_url: "/",
     display: "standalone",
     background_color: "#0f120d",
