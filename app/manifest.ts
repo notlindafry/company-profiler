@@ -9,14 +9,15 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "Profiler",
     description:
       "Research a company on the live web and get a clean, sourced profile for interview prep.",
-    // Explicit app identity. Without an `id`, Chrome derives one from start_url
-    // ("/"), so a phone that already installed the app keeps reviving that same
-    // cached WebAPK — including its stale, white-inset icon — every time it's
-    // re-added. Giving the app a distinct `id` makes Chrome treat this as a new
-    // app and mint a fresh WebAPK (with the full-bleed maskable icon) instead
-    // of resurrecting the old one. start_url stays "/" so it still opens the
-    // app home; only the identity used for install/update matching changes.
-    id: "/?app=profiler",
+    // Explicit app identity. A WebAPK's icon *type* (adaptive/maskable vs.
+    // white-inset legacy) is fixed when the app is first minted under a given
+    // id; later manifest updates only swap the icon bitmap, not the type. An
+    // earlier id was first minted while the maskable icon was still broken, so
+    // it got locked in as a white-inset app and stayed that way through every
+    // icon fix. Bumping the id forces Chrome to mint a brand-new WebAPK from
+    // scratch — now that the maskable icon is valid, that fresh mint is
+    // adaptive. start_url stays "/" so the app still opens the same home.
+    id: "/?app=profiler-v2",
     start_url: "/",
     display: "standalone",
     background_color: "#0f120d",
