@@ -58,6 +58,77 @@ const ExecChangeSchema = z.object({
   source: z.string().optional().describe("Source URL"),
 });
 
+// ---------------------------------------------------------------------------
+// Risk & Security function — the STANDING STATE of security leadership and the
+// second line (GRC / Tech Risk / ERM). This is the counterpart to execChanges:
+// execChanges is the event log ("the CISO changed on this date"); this section
+// is the synthesized current picture (who holds it now, for how long, how
+// stable, how mature, what they are hiring). Placed right after the leadership-
+// change event log so it reads as its standing-state counterpart.
+// ---------------------------------------------------------------------------
+const CisoSchema = z.object({
+  name: z
+    .string()
+    .describe(
+      'Current CISO / top security leader\'s name, or "Not found". If security has no dedicated executive and rolls up under the CIO / CTO / other, say so here explicitly — that absence is itself a maturity signal, not a "Not found".'
+    ),
+  title: z
+    .string()
+    .describe(
+      'Their exact title (e.g. "CISO", "VP, Security", "Head of Information Security"). The wording is a seniority signal, so keep it verbatim.'
+    ),
+  startDate: z
+    .string()
+    .describe(
+      'When they took the seat (month/year if available), from the appointment announcement. "Not found" if unknown.'
+    ),
+  tenure: z
+    .string()
+    .describe(
+      'How long they have held the seat, computed relative to TODAY\'S DATE (e.g. "~4 months", "~3 years"). "Not found" if the start date is unknown. A very short tenure is a stability flag; a long one is reassuring.'
+    ),
+  background: z
+    .string()
+    .describe(
+      'One line on where they came from (e.g. "ex-Amazon security", "internal promotion from deputy CISO"). A new leader from a big-tech background often reshapes the mandate and org.'
+    ),
+  source: z.string().describe("Source URL"),
+});
+
+const GrcRiskLeadershipSchema = z.object({
+  present: z
+    .string()
+    .describe(
+      'Whether there is a named, distinct owner of GRC / Technology Risk / Enterprise Risk below or beside the CISO — "Yes", "No", or "Not found". A separate ERM / GRC leader signals a maturing or IPO-prep second line; its absence suggests the function is thin or subsumed under security or the CIO.'
+    ),
+  detail: z
+    .string()
+    .describe(
+      'Name(s) and title(s) if present (e.g. "Jane Doe, Director of Enterprise Risk Management"), or a short note on how risk / GRC is currently owned. "Not found" if unclear.'
+    ),
+  source: z.string().optional().describe("Source URL"),
+});
+
+const RiskAndSecurityFunctionSchema = z.object({
+  ciso: CisoSchema,
+  securityLeadershipStability: z
+    .string()
+    .describe(
+      'Turnover pattern in the top security seat over roughly the last 5 years, stated specifically: how many people have held it and the cadence (e.g. "Third CISO since 2022; prior two each under 18 months" or "Same CISO since 2019 — stable"). This is a proxy for how stable the function is to join. Do NOT re-list individual appointment / departure events here — those belong in execChanges; give the synthesized pattern only. "Not found" if the history cannot be reconstructed.'
+    ),
+  grcRiskLeadership: GrcRiskLeadershipSchema,
+  secondLineMaturity: z
+    .string()
+    .describe(
+      'A synthesized read on whether a real second-line (GRC / Tech Risk) organization exists today, not just a title. Cover: does GRC / risk exist as a distinct function; roughly how large the security / risk org appears (approximate — say so, and note that public headcount signals such as LinkedIn are imprecise); and where the function sits in its lifecycle (nascent / building out / established / restructuring). Tie to sourced evidence (org announcements, leadership structure, press). "Not found" if there is insufficient signal.'
+    ),
+  hiringShape: z
+    .string()
+    .describe(
+      'What the company\'s CURRENTLY OPEN GRC / risk / security roles imply about the SHAPE of the mandate — this is distinct from the jobPostings list, which just enumerates roles that fit me. Interpret the pattern: a lone senior individual-contributor opening with no team suggests a solo seat; a Director / Manager plus supporting ICs, or a backfill into an existing team, suggests a real team mandate; multiple new reqs building a function from zero suggests a stand-up. Base this on counted, sourced open postings (reference the same links used in the W2 jobPostings / careersUrl). IMPORTANT: absence of postings does NOT prove absence of a team (hiring freezes exist) — distinguish "appears to be a solo seat" from "not currently hiring / cannot tell". "Not found" if there is no hiring signal to read.'
+    ),
+});
+
 const LayoffSchema = z.object({
   summary: z
     .string()
@@ -192,6 +263,9 @@ export const CompanyProfileSchema = z.object({
     .describe(
       "Leadership changes, most recent first — C-suite (CEO/CFO/CISO/etc.) and board appointments, departures, and promotions, including changes announced via press release. ACTIVELY search recent news; source each."
     ),
+  riskAndSecurityFunction: RiskAndSecurityFunctionSchema.describe(
+    "The state of the security leadership and second-line (GRC / Tech Risk / ERM) organization — who runs security now and for how long, how stable that seat has been, whether a distinct GRC / risk function exists, how mature the second line appears, and what current hiring implies about the mandate shape. This is the section that tells me whether there is a real team to lead (not a solo IC seat) and whether the risk function is stable enough to join. Applies to both public and private companies (use LinkedIn, the careers page, press, and — for public companies — cybersecurity governance disclosures in recent SEC filings). Use \"Not found\" per field rather than guessing."
+  ),
   layoffs: z
     .array(LayoffSchema)
     .describe(
@@ -242,6 +316,9 @@ export const CompanyProfileSchema = z.object({
 
 export type CompanyProfile = z.infer<typeof CompanyProfileSchema>;
 export type CompanySnapshot = z.infer<typeof SnapshotSchema>;
+export type RiskAndSecurityFunction = z.infer<typeof RiskAndSecurityFunctionSchema>;
+export type Ciso = z.infer<typeof CisoSchema>;
+export type GrcRiskLeadership = z.infer<typeof GrcRiskLeadershipSchema>;
 export type CompanyCulture = z.infer<typeof CultureSchema>;
 export type CompanyFitAndAngle = z.infer<typeof FitAndAngleSchema>;
 export type JobPosting = z.infer<typeof JobPostingSchema>;

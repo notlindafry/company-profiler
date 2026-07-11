@@ -79,6 +79,42 @@ Date and recency requirements:
 `.trim();
 }
 
+// Search strategy for the objective "riskAndSecurityFunction" section. Most of
+// the per-field guidance rides in the schema's .describe() texts; this block
+// carries the behavioral bits — how to search, and the division of labor with
+// execChanges so the model does not double-report the same facts.
+function riskAndSecurityGuidance(): string {
+  return `
+Populating the risk & security function section (objective — do NOT steer it by lens):
+- Find the current CISO / top security leader by title on LinkedIn and in press
+  (appointment announcements). Capture their start date so tenure can be computed
+  relative to TODAY'S DATE. If security has no dedicated executive and reports
+  under the CIO/CTO, state that — it is a maturity signal, not "Not found".
+- Reconstruct the turnover pattern in the top security seat over ~5 years for the
+  stability read (count of holders and cadence), synthesized — do NOT re-list the
+  individual events, which belong in the leadership-changes section.
+- Determine whether a distinct GRC / Technology Risk / Enterprise Risk leader
+  exists below or beside the CISO.
+- Read the SHAPE of currently open GRC / risk / security roles (count them by
+  level) to judge solo-seat vs. real-team mandate. Reuse the links gathered for
+  the W2 jobPostings/careersUrl. Absence of postings does not prove absence of a
+  team; say "not currently hiring / cannot tell" rather than "solo seat" when
+  unsure.
+- For PUBLIC companies, check recent 10-K cybersecurity governance disclosures
+  (the SEC's cybersecurity disclosure rules — verify the current item
+  designation; commonly cited as Item 1C) and the proxy statement for board
+  security oversight; these often name the CISO's reporting line and the
+  governance structure.
+
+Division of labor with the leadership-changes section: "execChanges" is the EVENT
+LOG ("the CISO changed on this date"); "riskAndSecurityFunction" is the STANDING
+STATE ("who holds it now, for how long, how stable, how mature, what they are
+hiring"). Put facts about a specific dated change in "execChanges"; put the
+synthesized current picture in "riskAndSecurityFunction". Do not duplicate one in
+the other.
+`.trim();
+}
+
 // The "fitAndAngle" object is the only part tailored to the user. It holds TWO
 // independent assessments — one per lens (w2, advisory) — so a single
 // profile serves every angle without the user choosing one up front.
@@ -103,11 +139,28 @@ on that color for this lens. If you genuinely cannot judge a lens, use "orange" 
 explaining what is missing.
 
 "w2" — I am evaluating this company as a potential FULL-TIME (W2) role for myself:
+- Read the "riskAndSecurityFunction" section you already filled in rather than
+  re-deriving team size, stability, or mandate shape here. whyItCouldFitYou and
+  watchOuts must CITE its findings — especially "hiringShape" (solo seat vs. real
+  team mandate) and "securityLeadershipStability" (turnover pattern) — instead of
+  independently guessing.
 - whyItCouldFitYou: 3-5 points on whether this company matches what I would take a
-  full-time seat for (size, sector, regulatory posture, whether it likely needs a real
-  second-line GRC / Tech-Risk mandate with a TEAM to lead — not a solo IC seat).
-- watchOuts: 2-4 honest flags I should weigh (recent layoffs, instability, legal /
-  regulatory overhang, signs the role would be a solo IC seat or lack a real mandate).
+  full-time seat for (size, sector, regulatory posture, and — drawn from
+  "riskAndSecurityFunction" — whether it has a real second-line GRC / Tech-Risk
+  mandate with a TEAM to lead, not a solo IC seat).
+- watchOuts: 2-4 honest flags I should weigh (recent layoffs, legal / regulatory
+  overhang, and — drawn from "riskAndSecurityFunction" — an apparent solo IC seat
+  from "hiringShape", or short-tenured / revolving-door security leadership from
+  "securityLeadershipStability").
+- Weight the W2 "temperature" on those findings, explicitly:
+  - "hiringShape" reads as an apparent SOLO IC seat → drag toward RED. This is a
+    veto criterion for me, not a minor caveat.
+  - Short-tenured or REVOLVING-DOOR security leadership → drag toward ORANGE
+    (stability risk).
+  - A MATURING / IPO-prep second line with a distinct GRC / ERM owner and a real
+    team mandate → supports GREEN.
+  When "hiringShape" says "not currently hiring / cannot tell", do NOT treat that
+  as a solo seat — absence of postings is not a veto.
 - talkingPoints: 3-5 specific things I could raise in an interview.
 - questionsToAsk: 3-5 smart, specific questions about the company or the role.
 - jobPostings: ACTIVELY use web_search to find this company's CURRENTLY OPEN job
@@ -129,6 +182,9 @@ explaining what is missing.
 Line Labs, my solo advisory practice (fractional / advisory GRC & Tech Risk). I am NOT
 looking to be hired full-time here under this lens. The question is whether they have a
 need my practice could serve and whether they would buy advisory help:
+- Also read "riskAndSecurityFunction.secondLineMaturity": a thin or nascent second
+  line is a buying signal for Second Line Labs; an already-mature in-house function
+  is a watch-out. Weigh it more lightly than the W2 lens weighs its findings.
 - whyItCouldFitYou: 3-5 points on why they could be a strong advisory client — buying
   signals that map to what Second Line Labs offers: scaling fast, recent funding,
   entering or already in a regulated space, IPO / charter / audit pressure, a recent
@@ -184,6 +240,8 @@ The factual sections are objective and do NOT change based on lens. Only
 "fitAndAngle" is tailored to me, and it provides two
 independent assessments — one per lens — as described below. Do NOT steer the
 factual sections toward any lens.
+
+${riskAndSecurityGuidance()}
 
 ${fitAndAngleGuidance()}
 

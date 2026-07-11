@@ -56,6 +56,21 @@ export function sanitizeProfile(p: CompanyProfile): CompanyProfile {
     execChanges: p.execChanges
       .map((x) => ({ ...x, source: safeUrl(x.source) }))
       .filter((x) => x.summary !== NF),
+    // The two source URLs in this section are rendered into <a href>, so they
+    // must pass through the same http(s)-only filter as every other link. ciso
+    // is a fixed sub-object (required source → urlOrNF); grcRiskLeadership's
+    // source is optional → safeUrl (drops to undefined when unsafe/absent).
+    riskAndSecurityFunction: {
+      ...p.riskAndSecurityFunction,
+      ciso: {
+        ...p.riskAndSecurityFunction.ciso,
+        source: urlOrNF(p.riskAndSecurityFunction.ciso.source),
+      },
+      grcRiskLeadership: {
+        ...p.riskAndSecurityFunction.grcRiskLeadership,
+        source: safeUrl(p.riskAndSecurityFunction.grcRiskLeadership.source),
+      },
+    },
     layoffs: p.layoffs
       .map((x) => ({ ...x, source: safeUrl(x.source) }))
       .filter((x) => x.summary !== NF),
