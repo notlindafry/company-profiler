@@ -3,6 +3,9 @@ import type {
   CompanyFitAndAngle,
   FitTemperature,
   ControversyType,
+  RiskAndSecurityFunction,
+  Ciso,
+  GrcRiskLeadership,
 } from "@/lib/schema";
 import { INTENTS } from "@/lib/schema";
 
@@ -207,6 +210,10 @@ export default function CompanyView({
           <Empty />
         )}
       </Section>
+
+      {/* Risk & Security function — the standing state of security leadership and
+          the second line (counterpart to the Leadership-changes event log above). */}
+      <RiskSecuritySection data={profile.riskAndSecurityFunction} />
 
       {/* Layoffs / RIFs */}
       <Section title="Layoffs / reductions in force">
@@ -424,6 +431,124 @@ function CultureRow({ label, value }: { label: string; value?: string }) {
     <div>
       <dt className="font-semibold text-[var(--text-strong)]">{label}</dt>
       <dd className="text-[var(--text)]">{value}</dd>
+    </div>
+  );
+}
+
+// Risk & Security function — the standing state of the security leadership and
+// second line. Leads with the CISO as the headline stat (tenure is a primary
+// decision driver) and gives the veto-relevant hiring signal its own callout.
+// Gated like the culture card: renders <Empty /> when every field is empty.
+function RiskSecuritySection({ data }: { data?: RiskAndSecurityFunction }) {
+  const ciso = data?.ciso;
+  const grc = data?.grcRiskLeadership;
+  const anyField =
+    !!data &&
+    (has(ciso?.name) ||
+      has(ciso?.title) ||
+      has(ciso?.tenure) ||
+      has(ciso?.startDate) ||
+      has(ciso?.background) ||
+      has(data.securityLeadershipStability) ||
+      has(grc?.present) ||
+      has(grc?.detail) ||
+      has(data.secondLineMaturity) ||
+      has(data.hiringShape));
+
+  return (
+    <Section title="Risk & Security function">
+      {anyField ? (
+        <div className="space-y-3 text-sm">
+          <CisoHeadline ciso={ciso} />
+          <CultureRow
+            label="Leadership stability"
+            value={data.securityLeadershipStability}
+          />
+          <GrcOwnerRow grc={grc} />
+          <CultureRow label="Second-line maturity" value={data.secondLineMaturity} />
+          <HiringSignal value={data.hiringShape} />
+        </div>
+      ) : (
+        <Empty />
+      )}
+    </Section>
+  );
+}
+
+// Headline stat for the section: "Name — Title" with the tenure called out
+// prominently (bold, since it drives the stability read), the start date and
+// background as supporting detail, and a [source] link.
+function CisoHeadline({ ciso }: { ciso?: Ciso }) {
+  if (!ciso) return null;
+  const showName = has(ciso.name);
+  const showTitle = has(ciso.title);
+  const showTenure = has(ciso.tenure);
+  const showStart = has(ciso.startDate);
+  const showBackground = has(ciso.background);
+  if (!showName && !showTitle && !showTenure && !showStart && !showBackground)
+    return null;
+  return (
+    <div>
+      <dt className="font-semibold text-[var(--text-strong)]">Security leader</dt>
+      <dd className="text-[var(--text)]">
+        {showName || showTitle ? (
+          <p className="text-base text-[var(--text-strong)]">
+            {showName ? <span className="font-semibold">{ciso.name}</span> : null}
+            {showName && showTitle ? " — " : null}
+            {showTitle ? <span>{ciso.title}</span> : null}
+          </p>
+        ) : null}
+        {showTenure ? (
+          <p className="mt-0.5">
+            <span className="text-xs uppercase tracking-wide text-[var(--text-muted)]">
+              Tenure:{" "}
+            </span>
+            <span className="text-base font-bold text-[var(--text-strong)]">
+              {ciso.tenure}
+            </span>
+            {showStart ? (
+              <span className="text-[var(--text-muted)]"> · since {ciso.startDate}</span>
+            ) : null}
+          </p>
+        ) : null}
+        {showBackground ? (
+          <p className="mt-0.5 text-[var(--text-muted)]">{ciso.background}</p>
+        ) : null}
+        <SourceLink url={ciso.source} />
+      </dd>
+    </div>
+  );
+}
+
+// GRC / Enterprise-Risk ownership: the "Yes/No" presence flag plus the detail
+// on who owns it, with its own [source] link.
+function GrcOwnerRow({ grc }: { grc?: GrcRiskLeadership }) {
+  if (!grc || (!has(grc.present) && !has(grc.detail))) return null;
+  return (
+    <div>
+      <dt className="font-semibold text-[var(--text-strong)]">GRC / risk owner</dt>
+      <dd className="text-[var(--text)]">
+        {has(grc.present) ? (
+          <span className="font-medium text-[var(--text-strong)]">{grc.present}</span>
+        ) : null}
+        {has(grc.present) && has(grc.detail) ? " — " : null}
+        {has(grc.detail) ? <span>{grc.detail}</span> : null}
+        <SourceLink url={grc.source} />
+      </dd>
+    </div>
+  );
+}
+
+// The veto-relevant field (solo IC seat vs. real team mandate). Given an accent
+// callout so it reads first, not as the last grey row.
+function HiringSignal({ value }: { value?: string }) {
+  if (!has(value)) return null;
+  return (
+    <div className="rounded-lg border border-[var(--border-strong)] border-l-4 border-l-[var(--accent)] bg-[var(--accent-dim)] px-4 py-3">
+      <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+        Hiring signal
+      </dt>
+      <dd className="mt-0.5 text-[var(--text-strong)]">{value}</dd>
     </div>
   );
 }
