@@ -328,7 +328,7 @@ export default function Profiler({
             type="button"
             onClick={handleLogout}
             disabled={loggingOut}
-            className="text-sm font-medium text-[var(--text-muted)] underline underline-offset-4 transition hover:text-[var(--text)] disabled:cursor-not-allowed disabled:opacity-60"
+            className="text-sm font-normal text-[var(--text-muted)] underline underline-offset-4 transition hover:text-[var(--text)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loggingOut ? "Logging out…" : "Log out"}
           </button>
