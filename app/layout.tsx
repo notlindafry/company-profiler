@@ -54,6 +54,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body className="min-h-screen antialiased">
+        {/* Sage-green accent line pinned to the very top edge of every screen
+            (matches the sibling PWA). Decorative and non-interactive. */}
+        <div
+          aria-hidden
+          className="fixed inset-x-0 top-0 z-50 h-[2px] bg-[var(--accent)] pointer-events-none"
+        />
         {children}
       </body>
     </html>
