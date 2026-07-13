@@ -18,7 +18,7 @@ const body = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Linda's Company Profiler",
+  title: "company-profiler",
   description:
     "Research a company on the live web and get a clean, sourced profile for interview prep.",
   // Ask search engines not to index or list this site.
@@ -36,7 +36,8 @@ export const metadata: Metadata = {
   // Let iOS launch it fullscreen (standalone) when added to the home screen.
   appleWebApp: {
     capable: true,
-    title: "Profiler",
+    // Name shown under the icon on the iOS home screen.
+    title: "company-profiler",
     statusBarStyle: "black-translucent",
   },
 };
