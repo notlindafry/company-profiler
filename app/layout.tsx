@@ -18,7 +18,7 @@ const body = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "company-profiler",
+  title: "corp-profiler",
   description:
     "Research a company on the live web and get a clean, sourced profile for interview prep.",
   // Ask search engines not to index or list this site.
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     // Name shown under the icon on the iOS home screen.
-    title: "company-profiler",
+    title: "corp-profiler",
     statusBarStyle: "black-translucent",
   },
 };

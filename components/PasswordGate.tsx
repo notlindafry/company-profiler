@@ -33,7 +33,7 @@ export default function PasswordGate() {
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
       <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
         <h1 className="text-xl font-bold text-[var(--text-strong)]">
-          company<span className="text-[var(--accent)]">-</span>profiler
+          corp<span className="text-[var(--accent)]">-</span>profiler
         </h1>
         <p className="mt-1 text-sm text-[var(--text-muted)]">
           This tool is password-protected. Enter the password to continue.

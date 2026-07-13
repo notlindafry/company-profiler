@@ -5,20 +5,20 @@ import type { MetadataRoute } from "next";
 // with the icon and colors below. Next serves this at /manifest.webmanifest.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "company-profiler",
-    short_name: "company-profiler",
+    name: "corp-profiler",
+    short_name: "corp-profiler",
     description:
       "Research a company on the live web and get a clean, sourced profile for interview prep.",
     // Fresh app identity. Google mints WebAPKs server-side and caches them by
     // (origin, id/start_url). The installed home-screen label comes from this
-    // manifest's short_name, so renaming the app to "company-profiler" also
+    // manifest's short_name, so renaming the app to "corp-profiler" also
     // requires a NEW identity — otherwise Google reuses the cached WebAPK (and
-    // its old "Profiler" label). Bumped "/?v=9" → "/?v=10" so a brand-new
-    // WebAPK is minted from the current manifest + icon and installs with the
-    // new name under the icon. The app ignores the query, so launch behaviour
-    // at "/?v=10" is unchanged.
-    id: "/?v=10",
-    start_url: "/?v=10",
+    // its old label). Bumped "/?v=10" → "/?v=11" so a brand-new WebAPK is
+    // minted from the current manifest + icon and installs with the new name
+    // under the icon. The app ignores the query, so launch behaviour at
+    // "/?v=11" is unchanged.
+    id: "/?v=11",
+    start_url: "/?v=11",
     display: "standalone",
     background_color: "#0f120d",
     theme_color: "#0f120d",
