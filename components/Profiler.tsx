@@ -174,21 +174,9 @@ export default function Profiler({
     <main className="mx-auto max-w-3xl px-4 py-10">
       {/* Header + form (hidden when printing) */}
       <div className="no-print">
-        <div className="flex items-start justify-between gap-4">
-          <h1 className="text-3xl font-bold tracking-tight text-[var(--text-strong)]">
-            company<span className="text-[var(--accent)]">-</span>profiler
-          </h1>
-          {gateEnabled && (
-            <button
-              type="button"
-              onClick={handleLogout}
-              disabled={loggingOut}
-              className="mt-1 shrink-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-sm font-medium text-[var(--text-muted)] shadow-sm transition hover:bg-[var(--surface-2)] hover:text-[var(--text)] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loggingOut ? "Logging out…" : "Log out"}
-            </button>
-          )}
-        </div>
+        <h1 className="text-3xl font-bold tracking-tight text-[var(--text-strong)]">
+          company<span className="text-[var(--accent)]">-</span>profiler
+        </h1>
         <p className="mt-2 text-[var(--text-muted)]">
           Enter a company and we&apos;ll research it on the live web — products,
           milestones, controversies, SEC and regulatory filings, major customers —
@@ -330,6 +318,20 @@ export default function Profiler({
             profile={result}
             usedExampleBackground={usedExampleBackground}
           />
+        </div>
+      )}
+
+      {/* Log out — centered text link at the bottom of the home screen. */}
+      {gateEnabled && (
+        <div className="no-print mt-12 flex justify-center">
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="text-sm font-medium text-[var(--text-muted)] underline underline-offset-4 transition hover:text-[var(--text)] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loggingOut ? "Logging out…" : "Log out"}
+          </button>
         </div>
       )}
     </main>
