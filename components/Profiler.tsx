@@ -176,7 +176,7 @@ export default function Profiler({
       <div className="no-print">
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-3xl font-bold tracking-tight text-[var(--text-strong)]">
-            Linda&apos;s Company Profiler
+            company<span className="text-[var(--accent)]">-</span>profiler
           </h1>
           {gateEnabled && (
             <button
