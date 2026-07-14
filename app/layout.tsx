@@ -58,7 +58,7 @@ export default function RootLayout({
             (matches the sibling PWA). Decorative and non-interactive. */}
         <div
           aria-hidden
-          className="fixed inset-x-0 top-0 z-50 h-[2px] bg-[var(--accent)] pointer-events-none"
+          className="fixed inset-x-0 top-0 z-50 h-[3px] bg-[var(--accent)] pointer-events-none"
         />
         {children}
       </body>

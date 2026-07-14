@@ -4,7 +4,7 @@
 export default function SetupNotice() {
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
-      <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-6 shadow-sm">
+      <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-6">
         <h1 className="text-xl font-bold text-[var(--text-strong)]">Setup required</h1>
         <p className="mt-2 text-sm text-[var(--text)]">
           This app is deployed without a password, so it&apos;s disabled to keep
@@ -12,7 +12,7 @@ export default function SetupNotice() {
         </p>
         <p className="mt-3 text-sm text-[var(--text)]">
           Set an{" "}
-          <code className="rounded bg-[var(--surface-2)] px-1 py-0.5 text-[var(--warn)]">
+          <code className="rounded bg-[var(--surface-hover)] px-1 py-0.5 text-[var(--warn)]">
             APP_PASSWORD
           </code>{" "}
           environment variable (Vercel → Settings → Environment Variables) for the

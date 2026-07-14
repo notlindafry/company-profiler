@@ -31,7 +31,7 @@ export default function PasswordGate() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
-      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
         <h1 className="text-xl font-bold text-[var(--text-strong)]">
           company<span className="text-[var(--accent)]">-</span>profiler
         </h1>
@@ -51,12 +51,12 @@ export default function PasswordGate() {
             placeholder="Password"
             autoFocus
             disabled={loading}
-            className="w-full rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-[var(--text-strong)] placeholder:text-[var(--text-muted)] shadow-sm focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] disabled:opacity-60"
+            className="w-full rounded-lg border border-[var(--border)] bg-[var(--surface-hover)] px-3 py-2 text-[var(--text-strong)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_var(--accent-dim)] disabled:opacity-60"
           />
           <button
             type="submit"
             disabled={loading}
-            className="mt-3 w-full rounded-lg bg-[var(--accent)] px-4 py-2 font-medium text-[var(--accent-text)] shadow-sm transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-3 w-full rounded-lg bg-[var(--accent)] px-4 py-2 font-medium text-[var(--accent-ink)] transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? "Checking…" : "Enter"}
           </button>
