@@ -187,7 +187,7 @@ export default function Profiler({
 
         <form
           onSubmit={handleSubmit}
-          className="mt-6 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm"
+          className="mt-6 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5"
         >
           <div>
             <label
@@ -203,7 +203,7 @@ export default function Profiler({
               onChange={(e) => setCompany(e.target.value)}
               placeholder="e.g. Acme Corp"
               disabled={loading}
-              className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-[var(--text-strong)] placeholder:text-[var(--text-muted)] shadow-sm focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] disabled:opacity-60"
+              className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-hover)] px-3 py-2 text-[var(--text-strong)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_var(--accent-dim)] disabled:opacity-60"
             />
           </div>
 
@@ -222,7 +222,7 @@ export default function Profiler({
               onChange={(e) => setDetail(e.target.value)}
               placeholder="e.g. acme.com or NASDAQ: ACME"
               disabled={loading}
-              className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-[var(--text-strong)] placeholder:text-[var(--text-muted)] shadow-sm focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] disabled:opacity-60"
+              className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-hover)] px-3 py-2 text-[var(--text-strong)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_var(--accent-dim)] disabled:opacity-60"
             />
             <p className="mt-1 text-xs text-[var(--text-muted)]">
               Helps pin the exact company when the name is generic (a website is
@@ -242,10 +242,10 @@ export default function Profiler({
                 return (
                   <label
                     key={opt.tier}
-                    className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 shadow-sm transition ${
+                    className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 transition ${
                       selected
-                        ? "border-[var(--accent)] bg-[var(--surface-2)] ring-1 ring-[var(--accent)]"
-                        : "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-2)]"
+                        ? "border-[var(--accent)] bg-[var(--surface-hover)] ring-1 ring-[var(--accent)]"
+                        : "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-hover)]"
                     } ${loading ? "cursor-not-allowed opacity-60" : ""}`}
                   >
                     <input
@@ -274,7 +274,7 @@ export default function Profiler({
           <button
             type="submit"
             disabled={loading}
-            className="mt-4 inline-flex items-center rounded-lg bg-[var(--accent)] px-4 py-2 font-medium text-[var(--accent-text)] shadow-sm transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-4 inline-flex items-center rounded-lg bg-[var(--accent)] px-4 py-2 font-medium text-[var(--accent-ink)] transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? "Researching…" : "Research company"}
           </button>
@@ -287,7 +287,7 @@ export default function Profiler({
         )}
 
         {loading && (
-          <div className="mt-6 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+          <div className="mt-6 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
             <div className="flex items-center gap-3">
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--border)] border-t-[var(--accent)]" />
               <p className="text-[var(--text)]">
@@ -309,7 +309,7 @@ export default function Profiler({
           <div className="no-print mb-4 flex justify-end">
             <button
               onClick={handlePrint}
-              className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-medium text-[var(--text)] shadow-sm hover:bg-[var(--surface-2)]"
+              className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-medium text-[var(--text)] hover:bg-[var(--surface-hover)]"
             >
               Print / Save as PDF
             </button>
@@ -328,7 +328,7 @@ export default function Profiler({
             type="button"
             onClick={handleLogout}
             disabled={loggingOut}
-            className="text-sm font-normal text-[var(--text-muted)] underline underline-offset-4 transition hover:text-[var(--text)] disabled:cursor-not-allowed disabled:opacity-60"
+            className="text-sm font-normal text-[var(--accent)] underline-offset-4 transition hover:underline disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loggingOut ? "Logging out…" : "Log out"}
           </button>

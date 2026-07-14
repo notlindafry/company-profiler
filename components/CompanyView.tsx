@@ -116,7 +116,7 @@ export default function CompanyView({
 }) {
   const s = profile.snapshot;
   return (
-    <article className="print-container mx-auto max-w-3xl rounded-xl border border-[var(--border)] bg-[var(--surface)] p-8 shadow-sm">
+    <article className="print-container mx-auto max-w-3xl rounded-xl border border-[var(--border)] bg-[var(--surface)] p-8">
       {/* Header */}
       <header className="pb-2">
         <h1 className="text-2xl font-bold text-[var(--text-strong)]">{profile.name}</h1>

@@ -5,37 +5,33 @@ import type { MetadataRoute } from "next";
 // with the icon and colors below. Next serves this at /manifest.webmanifest.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "corp-profiler",
+    // short_name is the launcher label (what shows under the home-screen icon);
+    // name is the fuller in-app title, per the shared design-system rules (§7).
+    name: "company-profiler — company profiling",
     short_name: "corp-profiler",
     description:
       "Research a company on the live web and get a clean, sourced profile for interview prep.",
-    // Fresh app identity. Google mints WebAPKs server-side and caches them by
-    // (origin, id/start_url). The installed home-screen label comes from this
-    // manifest's short_name, so renaming the app to "corp-profiler" also
-    // requires a NEW identity — otherwise Google reuses the cached WebAPK (and
-    // its old label). Bumped "/?v=10" → "/?v=11" so a brand-new WebAPK is
-    // minted from the current manifest + icon and installs with the new name
-    // under the icon. The app ignores the query, so launch behaviour at
-    // "/?v=11" is unchanged.
-    id: "/?v=11",
-    start_url: "/?v=11",
+    // Canonical, unversioned identity (§7). Google mints WebAPKs server-side and
+    // caches them by (origin, id/start_url); id defaults to start_url. Moving
+    // from the old "/?v=12" query to a plain "/" is itself a new identity, so
+    // installed apps re-mint once and pick up the new connected-nodes icon and
+    // name — after which no more version bumping is needed.
+    start_url: "/",
     display: "standalone",
-    background_color: "#0f120d",
-    theme_color: "#0f120d",
-    // Icons are rendered from public/icon.svg as full-bleed, fully opaque RGBA
-    // PNGs: a sage (#7D9B83) corporate skyline on a dark #1D231C field that
-    // reaches every corner (matching the sibling PWA whose tile renders
-    // edge-to-edge on the same device). The skyline stays inside the maskable
-    // safe zone (a central circle of radius 40% of the width), so a circular
-    // crop reveals only the dark field. A full-bleed DARK icon is also
-    // diagnostic: if the tile shows a white ring the launcher fell back to the
-    // legacy path; a solid dark circle means the adaptive/maskable path worked.
-    // Each size is listed as both "any" and "maskable" with the same src.
+    background_color: "#0f120d", // --bg (one step darker than the icon plate --surface #1d231c)
+    theme_color: "#0f120d",      // --bg
+    // Icons are the committed PNGs rendered from public/icon.svg: a sage
+    // (#7D9B83) line-mark of three connected nodes (company-profiling motif) on
+    // a solid --surface (#1D231C) plate that reaches every corner. Per §7 the
+    // mark is a stroke drawing (fill="none", 28px dominant node stroke, lighter
+    // connectors, rounded caps/joins), with a single small --text highlight. The
+    // mark stays inside the maskable safe zone, so a circular crop reveals only
+    // the dark plate. Each size is listed as both "any" and "maskable".
     icons: [
-      { src: "/icon-192-v9.png", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "/icon-192-v9.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
-      { src: "/icon-512-v9.png", sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: "/icon-512-v9.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
+      { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }

@@ -10,13 +10,6 @@
    values, e.g. bg-[var(--surface)] / text-[var(--text)].
    --------------------------------------------------------------------------- */
 :root {
-  /* Body/UI type rides the shared Inter/Space Grotesk fonts loaded in
-     layout.tsx via next/font (--font-body / --font-display, self-hosted at
-     build so CSP font-src stays 'self'); this alias just adds a system-font
-     fallback in case those variables are ever absent. */
-  --font-sans: var(--font-body), ui-sans-serif, system-ui, -apple-system,
-    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-
   /* --- the five palette colors (shared house theme, screen default) --- */
   --bg: #0f120d; /* page background (deepest near-black green) */
   --surface: #1d231c; /* cards, panels, inputs, chips */
@@ -34,10 +27,9 @@
   --accent-dim: color-mix(in srgb, var(--accent), transparent 84%);
   --accent-ink: var(--bg); /* dark text on a sage fill */
 
-  /* Legacy token names, kept as aliases so existing component classes keep
-     working under the canonical palette (value-match, per the theme spec). */
-  --surface-2: var(--surface-hover);
-  --accent-text: var(--accent-ink);
+  /* Interactive-accent derivations (still mixes of --accent, no new hues).
+     --accent-hover realises §6's "hover mixes accent toward white"; --link is a
+     slightly lifted accent for readable links on the dark surface. */
   --accent-hover: color-mix(in srgb, var(--accent), white 15%); /* button hover */
   --link: color-mix(in srgb, var(--accent), white 15%); /* readable link on dark */
 
@@ -48,26 +40,37 @@
 
   --radius: 12px;
   --radius-sm: 8px;
-  --maxw: 1120px;
+  --maxw: 1000px;
 
   color-scheme: dark;
 }
 
 body {
-  font-family: var(--font-sans);
+  /* Inter (--font-body) is the body face, self-hosted via next/font (so CSP
+     font-src stays 'self'); the tail is a system fallback if the variable is
+     ever absent. */
+  font-family: var(--font-body), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
 }
 
-/* Space Grotesk is the display face for headings and the app title; body copy
-   stays on Inter (--font-sans). Falls back to --font-sans if unset. */
+/* Space Grotesk (--font-display) is the display face for headings and the app
+   title; body copy stays on Inter. Falls back to --font-body if unset. */
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-display, var(--font-sans));
+  font-family: var(--font-display, var(--font-body));
+}
+
+/* Global keyboard-focus affordance (§6). Inputs additionally show the
+   accent-dim focus-ring set on the controls themselves. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* Print / Save-as-PDF styles: light palette, hide page chrome, let the profile
@@ -76,14 +79,14 @@ h6 {
   :root {
     --bg: #ffffff;
     --surface: #ffffff;
-    --surface-2: #ffffff;
+    --surface-hover: #ffffff;
     --border: #e2e8f0; /* slate-200 */
     --text: #334155; /* slate-700 */
     --text-strong: #0f172a; /* slate-900 */
     --text-muted: #64748b; /* slate-500 */
     --accent: #2563eb; /* blue-600 */
     --accent-hover: #1d4ed8;
-    --accent-text: #ffffff;
+    --accent-ink: #ffffff;
     --link: #2563eb;
     --warn: #b45309; /* amber-700 */
 
