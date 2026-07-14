@@ -23,15 +23,15 @@ export const metadata: Metadata = {
     "Research a company on the live web and get a clean, sourced profile for interview prep.",
   // Ask search engines not to index or list this site.
   robots: { index: false, follow: false },
-  // The PWA install icons live in app/manifest.ts. Here we only declare the
-  // browser-tab favicon (the SVG) and the iOS home-screen icon. We intentionally
-  // do NOT declare a PNG <link rel="icon"> at 192px: Chrome can otherwise pick
-  // that non-maskable link for the Android home-screen icon over the manifest's
-  // maskable icon, which is what produced the white-inset tile.
-  manifest: "/manifest.webmanifest",
+  // The PWA install icons live in app/manifest.ts, which Next auto-links at
+  // /manifest.webmanifest (so no manual `manifest:` field is needed). Here we
+  // only declare the browser-tab favicon (the SVG) and the iOS home-screen icon.
+  // We intentionally do NOT declare a PNG <link rel="icon"> at 192px: Chrome can
+  // otherwise pick that non-maskable link for the Android home-screen icon over
+  // the manifest's maskable icon, which is what produced the white-inset tile.
   icons: {
     icon: "/icon.svg",
-    apple: "/apple-touch-icon-v9.png",
+    apple: "/apple-touch-icon.png",
   },
   // Let iOS launch it fullscreen (standalone) when added to the home screen.
   appleWebApp: {
