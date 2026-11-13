@@ -106,6 +106,12 @@ the browser.
 - **Verify it's on:** open the deployed URL in a private/incognito window — you
   should see the password screen. If you set `APP_PASSWORD` only for Preview (not
   Production), or to an empty value, the gate won't be active.
+- **Session signing key (recommended):** also set `SESSION_SECRET` to a long
+  random value (run `openssl rand -hex 32` to make one). It signs the login
+  cookie. Sessions expire after 30 days. Changing `APP_PASSWORD` or
+  `SESSION_SECRET` logs out every device at once.
+- **Login lockout:** after 5 wrong passwords from one IP, logins from it are
+  locked for 1 minute, doubling with each further miss (up to 1 hour).
 
 ## Changing things later
 
