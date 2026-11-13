@@ -8,6 +8,7 @@ import {
 import { buildSystemPrompt, buildCompanyPrompt } from "./prompt";
 import { sanitizeProfile } from "./sanitize";
 import { cacheGet, cacheSet } from "./cache";
+import { UserFacingError } from "./errors";
 import { CompanyProfileSchema, type CompanyProfile } from "./schema";
 
 // JSON Schema derived from the one Zod schema. zodOutputFormat's transform emits
@@ -39,7 +40,9 @@ function cacheKey(
   detail: string | undefined,
   model: string
 ): string {
-  return `${model} ${company.toLowerCase()} ${(detail ?? "").toLowerCase()}`;
+  // JSON-encode so field boundaries are unambiguous (a space-joined key let
+  // company "a b" collide with company "a" + detail "b").
+  return JSON.stringify([model, company.toLowerCase(), (detail ?? "").toLowerCase()]);
 }
 
 export async function researchCompany(
@@ -151,7 +154,7 @@ export async function researchCompany(
     .finalMessage();
 
   if (finalMessage.stop_reason === "refusal") {
-    throw new Error(
+    throw new UserFacingError(
       "The model declined to answer this request. Try a different company."
     );
   }
@@ -159,7 +162,7 @@ export async function researchCompany(
   // Output hit the max_tokens ceiling — the tool input is cut off mid-object, so
   // fail with a clear message instead of a confusing validation error.
   if (finalMessage.stop_reason === "max_tokens") {
-    throw new Error(
+    throw new UserFacingError(
       "The profile was cut off before it finished. Please try again."
     );
   }
@@ -171,7 +174,7 @@ export async function researchCompany(
       block.type === "tool_use" && block.name === PROFILE_TOOL_NAME
   );
   if (!toolUse) {
-    throw new Error("The model did not return a profile. Please try again.");
+    throw new UserFacingError("The model did not return a profile. Please try again.");
   }
 
   // The emit_profile schema is advisory (non-strict tool), so the input isn't
@@ -179,7 +182,7 @@ export async function researchCompany(
   // after this line can trust the shape completely.
   const validated = CompanyProfileSchema.safeParse(toolUse.input);
   if (!validated.success) {
-    throw new Error(
+    throw new UserFacingError(
       "The model's response did not match the expected profile format. Please try again."
     );
   }

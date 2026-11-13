@@ -92,8 +92,30 @@ export const PROFILE_GLOBAL_RATE_LIMIT = 40; // runs per PROFILE_RATE_WINDOW_MS
 export const PROFILE_GLOBAL_MAX_CONCURRENT = 4; // simultaneous runs per instance
 
 // Login endpoint: throttle password attempts per IP to blunt brute forcing.
-export const LOGIN_RATE_LIMIT = 8;
-export const LOGIN_RATE_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+// At most 5 attempts per minute per IP...
+export const LOGIN_RATE_LIMIT = 5;
+export const LOGIN_RATE_WINDOW_MS = 60 * 1000; // 1 minute
+
+// ...plus a lockout with exponential backoff on repeated FAILURES: after 5
+// consecutive wrong passwords from an IP it is locked for 1 minute, doubling per
+// further failure (2, 4, 8 ... min) up to 1 hour. A correct password resets it.
+export const LOGIN_LOCKOUT = {
+  threshold: 5,
+  baseMs: 60 * 1000,
+  maxMs: 60 * 60 * 1000,
+  forgetMs: 24 * 60 * 60 * 1000,
+};
+
+// Process-wide cap on FAILED logins, independent of the (spoofable) client IP,
+// so rotating X-Forwarded-For values can't make brute forcing unlimited.
+// Tradeoff: while this trips, the owner also can't log in on this instance for
+// the remainder of the window (existing sessions keep working).
+export const LOGIN_GLOBAL_FAILURE_LIMIT = 50;
+export const LOGIN_GLOBAL_FAILURE_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
+// Logout endpoint: cheap, but still rate-limited like every API route.
+export const LOGOUT_RATE_LIMIT = 20;
+export const LOGOUT_RATE_WINDOW_MS = 60 * 1000;
 
 // How long to reuse a previously researched profile for an identical request
 // (same company + detail) before re-running the pipeline.

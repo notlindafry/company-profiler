@@ -36,10 +36,7 @@ export default function Profiler({
 
   // Count up while a lookup runs so the long wait visibly progresses.
   useEffect(() => {
-    if (!loading) {
-      setElapsed(0);
-      return;
-    }
+    if (!loading) return;
     const start = Date.now();
     const id = setInterval(
       () => setElapsed(Math.floor((Date.now() - start) / 1000)),
@@ -54,6 +51,7 @@ export default function Profiler({
       setError("Please enter a company.");
       return;
     }
+    setElapsed(0);
     setLoading(true);
     setError(null);
     setResult(null);
