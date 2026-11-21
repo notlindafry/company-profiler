@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { cookies } from "next/headers";
 import { researchCompany } from "@/lib/research";
+import { UserFacingError } from "@/lib/errors";
 import { COOKIE_NAME, isAuthorized, isUnprotectedInProd } from "@/lib/auth";
 import {
   PROFILE_RATE_LIMIT,
@@ -40,19 +41,14 @@ function describeError(err: unknown): string {
     if (status >= 500) return "The research provider had a temporary error. Please try again.";
     return "The research request could not be completed. Please try again.";
   }
-  // Our own thrown errors carry intentionally user-safe messages.
-  if (err instanceof Error && err.message) return err.message;
-  return "Something went wrong during research.";
+  // Only errors we deliberately marked as user-safe pass their message through;
+  // anything else (SDK internals, network errors, bugs) gets a generic message.
+  if (err instanceof UserFacingError) return err.message;
+  return "Something went wrong during research. Please try again.";
 }
 
 export async function POST(req: Request) {
   // --- Pre-stream checks: these can still return real HTTP status codes. ---
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json(
-      { error: "Server is missing ANTHROPIC_API_KEY. See the README setup steps." },
-      { status: 500 }
-    );
-  }
 
   // Fail closed: never serve billable research from a production app that has no
   // password gate. This prevents silently exposing the owner's API key publicly.
@@ -74,6 +70,15 @@ export async function POST(req: Request) {
     return Response.json(
       { error: "Not authorized. Please enter the password." },
       { status: 401 }
+    );
+  }
+
+  // Checked after auth so anonymous callers learn nothing about server config.
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.error("Refusing research: ANTHROPIC_API_KEY is not set.");
+    return Response.json(
+      { error: "The server is not configured for research yet. See the README setup steps." },
+      { status: 500 }
     );
   }
 
@@ -190,7 +195,7 @@ export async function POST(req: Request) {
       const timeoutPromise = new Promise<never>((_, reject) => {
         timeoutId = setTimeout(() => {
           ac.abort();
-          reject(new Error("Research timed out — the company may be too complex. Try reducing the scope or searching again."));
+          reject(new UserFacingError("Research timed out — the company may be too complex. Try reducing the scope or searching again."));
         }, 540_000); // 9 min, safely inside the 600s maxDuration ceiling
       });
 
